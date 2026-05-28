@@ -64,7 +64,7 @@ async def receive_ping(data: PingRequest, db: Session = Depends(get_db)):
     
     # 2. Update server status and current metrics
     server.name = data.server_name # Allow updating nickname
-    server.last_ping = datetime.utcnow()
+    server.last_ping = datetime.now()
     server.ip_address = data.ip_address
     server.cpu_usage = data.cpu_usage
     server.mem_usage = data.mem_usage

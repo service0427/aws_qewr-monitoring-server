@@ -9,7 +9,7 @@ RETENTION_DAYS = 7
 def cleanup():
     db = SessionLocal()
     try:
-        cutoff_date = datetime.utcnow() - timedelta(days=RETENTION_DAYS)
+        cutoff_date = datetime.now() - timedelta(days=RETENTION_DAYS)
         print(f"Cleaning up metrics older than {cutoff_date}...")
         
         # Delete old metrics

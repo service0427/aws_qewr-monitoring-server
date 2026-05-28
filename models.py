@@ -26,7 +26,7 @@ class Server(Base):
     hardware_id = Column(String(50), unique=True, index=True) # MAC Address
     name = Column(String(100), index=True) # Nickname
     ip_address = Column(String(45))
-    last_ping = Column(DateTime, default=datetime.utcnow)
+    last_ping = Column(DateTime, default=datetime.now)
     status = Column(String(20), default="online")
     
     # Stats & Specs
@@ -47,7 +47,7 @@ class Metric(Base):
     mem_usage = Column(Float)
     disk_usage = Column(Float)
     uptime = Column(String(100))
-    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, default=datetime.now, index=True)
 
     server = relationship("Server", back_populates="metrics")
 
