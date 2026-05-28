@@ -21,6 +21,7 @@ The `qewr-monitoring-server` is an advanced, lightweight monitoring solution for
 1. Test everything locally first.
 2. Ensure changes are pushed to `aws_qewr-monitoring-server`.
 3. Use the `deploy.sh` script to surgically sync only the source files to the remote AWS instance via `rsync`.
+4. **Important:** The remote AWS server uses Nginx to reverse proxy port 443 to the PM2 instance on port 8000. SSL is handled by Let's Encrypt. Do NOT bind FastAPI directly to port 80 or 443.
 
 ### Client Installation
 - Run on target client: `curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash`
