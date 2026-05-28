@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Qewr Monitoring</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>QEWR MONITOR</h1>
+            <div id="summary-bar">
+                <span id="alert-count" class="badge">Checking...</span>
+            </div>
+        </header>
+
+        <main id="server-list">
+            <div class="loading">서버 상태를 불러오는 중...</div>
+        </main>
+
+        <!-- 상세보기 모달 -->
+        <div id="detail-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+                <h2 id="modal-server-name">Server Details</h2>
+                <div id="modal-spec-list" class="spec-list"></div>
+                <div class="memo-section">
+                    <label class="spec-label">Server Memo (Location/Note):</label>
+                    <input type="text" id="modal-memo-input" class="memo-input" placeholder="e.g. Rack A, Seoul Office...">
+                    <button class="save-btn" onclick="saveMemo()">Save Memo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

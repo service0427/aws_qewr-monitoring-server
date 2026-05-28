@@ -1,0 +1,16 @@
+# Security & Secrets
+.env
+**/ .env
+pem/
+*.pem
+
+# Development Artifacts
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+.git_backup/
+
+# Submodules or separate repos
+dist/
+github-init/
