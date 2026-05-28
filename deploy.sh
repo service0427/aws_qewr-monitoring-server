@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # Load environment variables
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+if [ -f ../.env ]; then
+    export $(grep -v '^#' ../.env | xargs)
 else
-    echo ".env file not found!"
+    echo "../.env file not found!"
     exit 1
 fi
 
 # Configuration
 REMOTE_USER="ubuntu"
-REMOTE_HOST=$SERVER_IP
+REMOTE_HOST=$QEWR_SERVER_IP
 REMOTE_DIR="~/qewr-monitoring-server"
-PEM_KEY=$PEM_PATH
+PEM_KEY=$QEWR_PEM
 
 # Check if PEM key exists
 if [ ! -f "$PEM_KEY" ]; then
