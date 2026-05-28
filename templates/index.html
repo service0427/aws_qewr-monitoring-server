@@ -26,6 +26,24 @@
                 <span class="close-btn" onclick="closeModal()">&times;</span>
                 <h2 id="modal-server-name">Server Details</h2>
                 <div id="modal-spec-list" class="spec-list"></div>
+                
+                <div class="metrics-history-section">
+                    <button class="view-metrics-btn" onclick="toggleMetrics()">View Historical Metrics (Last 7 Days)</button>
+                    <div id="metrics-history-list" style="display: none;">
+                        <table class="metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>CPU</th>
+                                    <th>MEM</th>
+                                    <th>Disk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="metrics-data"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="memo-section">
                     <label class="spec-label">Server Memo (Location/Note):</label>
                     <input type="text" id="modal-memo-input" class="memo-input" placeholder="e.g. Rack A, Seoul Office...">

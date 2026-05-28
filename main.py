@@ -120,6 +120,12 @@ def update_memo(server_id: int, data: MemoRequest, db: Session = Depends(get_db)
     db.commit()
     return {"status": "ok"}
 
+@app.get("/api/servers/{server_id}/metrics")
+def get_server_metrics(server_id: int, db: Session = Depends(get_db)):
+    # Return last 100 metrics for the chart/list
+    metrics = db.query(models.Metric).filter(models.Metric.server_id == server_id).order_by(models.Metric.timestamp.desc()).limit(100).all()
+    return metrics
+
 @app.get("/")
 def read_index(response: Response):
     # Prevent caching for live data

@@ -140,4 +140,42 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
 }
 .save-btn:active { opacity: 0.8; }
 
+/* Metrics History Styles */
+.metrics-history-section { margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+.view-metrics-btn {
+    background: #333;
+    color: var(--text-primary);
+    border: 1px solid #444;
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+#metrics-history-list {
+    margin-top: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #121212;
+    border-radius: 4px;
+}
+.metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+.metrics-table th {
+    text-align: left;
+    padding: 6px;
+    border-bottom: 1px solid #333;
+    position: sticky;
+    top: 0;
+    background: #121212;
+}
+.metrics-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #1a1a1a;
+}
+
 .loading { text-align: center; padding: 50px; color: var(--text-secondary); font-style: italic; }

@@ -20,10 +20,8 @@ async function updateDashboard() {
         const container = document.getElementById('server-list');
         const alertBadge = document.getElementById('alert-count');
         
-        servers.sort((a, b) => {
-            const score = { 'critical': 0, 'warning': 1, 'online': 2 };
-            return (score[a.status] || 2) - (score[b.status] || 2);
-        });
+        // 정렬 기준을 Name으로 변경
+        servers.sort((a, b) => a.name.localeCompare(b.name));
 
         const alertServers = servers.filter(s => s.status !== 'online').length;
         if (alertServers > 0) {
@@ -132,7 +130,50 @@ async function saveMemo() {
 
 function closeModal() {
     document.getElementById('detail-modal').style.display = 'none';
+    document.getElementById('metrics-history-list').style.display = 'none';
     currentServerId = null;
+}
+
+async function toggleMetrics() {
+    const list = document.getElementById('metrics-history-list');
+    if (list.style.display === 'none') {
+        list.style.display = 'block';
+        await loadHistoricalMetrics();
+    } else {
+        list.style.display = 'none';
+    }
+}
+
+async function loadHistoricalMetrics() {
+    if (!currentServerId) return;
+    const container = document.getElementById('metrics-data');
+    container.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
+    
+    try {
+        const response = await fetch(`/api/servers/${currentServerId}/metrics`);
+        const metrics = await response.json();
+        
+        if (metrics.length === 0) {
+            container.innerHTML = '<tr><td colspan="4" style="text-align:center">No logs found.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = metrics.map(m => {
+            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(m.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+            return `
+                <tr>
+                    <td>${date} ${time}</td>
+                    <td>${m.cpu_usage.toFixed(0)}%</td>
+                    <td>${m.mem_usage.toFixed(0)}%</td>
+                    <td>${m.disk_usage.toFixed(0)}%</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load metrics:', error);
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center">Error loading logs.</td></tr>';
+    }
 }
 
 window.onclick = function(event) {
