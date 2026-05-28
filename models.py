@@ -47,7 +47,7 @@ class Metric(Base):
     mem_usage = Column(Float)
     disk_usage = Column(Float)
     uptime = Column(String(100))
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
     server = relationship("Server", back_populates="metrics")
 

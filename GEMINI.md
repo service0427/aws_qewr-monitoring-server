@@ -23,6 +23,12 @@ The `qewr-monitoring-server` is an advanced, lightweight monitoring solution for
 3. Use the `deploy.sh` script to surgically sync only the source files to the remote AWS instance via `rsync`.
 4. **Important:** The remote AWS server uses Nginx to reverse proxy port 443 to the PM2 instance on port 8000. SSL is handled by Let's Encrypt. Do NOT bind FastAPI directly to port 80 or 443.
 
+## Server Maintenance & Optimization
+- **Data Retention:** `cleanup_db.py` runs daily via crontab (3 AM) to delete metrics older than 7 days.
+- **Log Management:** `pm2-logrotate` is used to prevent PM2 logs from consuming disk space (10MB max, 5 files retain).
+- **Database Indexing:** `Metric.timestamp` is indexed to ensure cleanup queries remain fast as the database grows.
+- **Setup:** Run `./setup_maintenance.sh` on the server to apply these configurations.
+
 ### Client Installation
 - Run on target client: `curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash`
 - Enforces `U*` hostname pattern (must start with 'U') and automates Tailscale auth and crontab registration (`/etc/cron.d/`).
