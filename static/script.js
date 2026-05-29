@@ -15,8 +15,8 @@ async function updateDashboard() {
     try {
         const response = await fetch('/api/servers', { cache: 'no-store' });
         const servers = await response.json();
-        currentServers = servers;
         
+        // 데이터 변화 감지를 위해 이전 데이터와 비교 로직 추가 가능하지만 간단히 갱신
         const container = document.getElementById('server-list');
         const alertBadge = document.getElementById('alert-count');
         
@@ -37,35 +37,58 @@ async function updateDashboard() {
             return;
         }
 
-        container.innerHTML = servers.map(server => `
-            <div class="server-card ${server.status}" onclick="showDetails(${server.id})">
-                <div class="server-name">
-                    <span>
-                        ${server.name} <span class="ip-small">(${server.ip_address})</span>
-                        ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
-                    </span>
-                    <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
+        const oldServersMap = new Map(currentServers.map(s => [s.id, s]));
+        currentServers = servers;
+
+        container.innerHTML = servers.map(server => {
+            const oldServer = oldServersMap.get(server.id);
+            const isCpuUpdated = oldServer && oldServer.cpu_usage.toFixed(0) !== server.cpu_usage.toFixed(0);
+            const isMemUpdated = oldServer && oldServer.mem_usage.toFixed(0) !== server.mem_usage.toFixed(0);
+
+            return `
+                <div class="server-card ${server.status}" onclick="showDetails(${server.id})">
+                    <div class="server-name">
+                        <span>
+                            ${server.name} <span class="ip-small">(${server.ip_address})</span>
+                            ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
+                        </span>
+                        <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
+                    </div>
+                    <div class="metrics">
+                        <div class="metric-item">
+                            <span class="label">CPU</span>
+                            <span class="value ${server.cpu_usage > 90 ? 'high' : ''} ${isCpuUpdated ? 'updated' : ''}">${server.cpu_usage.toFixed(0)}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="label">MEM</span>
+                            <span class="value ${server.mem_usage > 90 ? 'high' : ''} ${isMemUpdated ? 'updated' : ''}">${server.mem_usage.toFixed(0)}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="label">DSK</span>
+                            <span class="value">${server.disk_usage.toFixed(0)}%</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="metrics">
-                    <div class="metric-item">
-                        <span class="label">CPU</span>
-                        <span class="value ${server.cpu_usage > 90 ? 'high' : ''}">${server.cpu_usage.toFixed(0)}%</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="label">MEM</span>
-                        <span class="value ${server.mem_usage > 90 ? 'high' : ''}">${server.mem_usage.toFixed(0)}%</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="label">DSK</span>
-                        <span class="value">${server.disk_usage.toFixed(0)}%</span>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (error) {
         console.error('Update failed:', error);
     }
+}
+
+function copyInstallerCommand() {
+    const cmd = document.getElementById('installer-cmd').innerText;
+    navigator.clipboard.writeText(cmd).then(() => {
+        const box = document.querySelector('.installer-copy-box');
+        const originalHtml = box.innerHTML;
+        box.innerHTML = '<i class="fas fa-check"></i> <span>Copied to clipboard!</span>';
+        box.style.borderColor = 'var(--success)';
+        setTimeout(() => {
+            box.innerHTML = originalHtml;
+            box.style.borderColor = '#333';
+        }, 2000);
+    });
 }
 
 function showDetails(serverId) {
@@ -125,6 +148,36 @@ async function saveMemo() {
     } catch (error) {
         console.error('Save failed:', error);
         alert('An error occurred while saving.');
+    }
+}
+
+async function confirmDelete() {
+    if (!currentServerId) return;
+    
+    const confirmation = prompt('서버를 삭제하시겠습니까? 삭제하려면 "확인"이라고 입력해주세요.');
+    if (confirmation === '확인') {
+        await deleteServer();
+    } else if (confirmation !== null) {
+        alert('문구가 일치하지 않아 삭제를 취소합니다.');
+    }
+}
+
+async function deleteServer() {
+    try {
+        const response = await fetch(`/api/servers/${currentServerId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('서버가 성공적으로 삭제되었습니다.');
+            closeModal();
+            updateDashboard();
+        } else {
+            alert('서버 삭제에 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('Delete failed:', error);
+        alert('삭제 중 오류가 발생했습니다.');
     }
 }
 

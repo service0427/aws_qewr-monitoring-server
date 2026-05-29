@@ -30,6 +30,32 @@ header {
 
 h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondary); font-weight: 900; }
 
+.installer-copy-box {
+    background: #111;
+    border: 1px solid #333;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.2s;
+}
+.installer-copy-box:active { background: #222; transform: scale(0.98); }
+.installer-copy-box i { color: var(--success); }
+.installer-copy-box span { 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    font-family: monospace; 
+}
+
 #summary-bar { margin-top: 8px; }
 .badge { background: #222; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; color: var(--text-secondary); }
 .badge.critical { background: var(--danger); color: white; animation: blink 1.5s infinite; }
@@ -51,7 +77,13 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     border-left: 3px solid #333;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     cursor: pointer;
+    transition: transform 0.1s ease, background 0.3s ease;
 }
+.server-card:active { transform: scale(0.95); background: #252525; }
+
+.server-card.online { border-left-color: var(--success); }
+.server-card.warning { border-left-color: var(--warning); }
+.server-card.critical { border-left-color: var(--danger); }
 
 .server-name { 
     font-size: 0.85rem; 
@@ -85,7 +117,13 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     align-items: center; 
 }
 .label { font-size: 0.5rem; opacity: 0.7; margin-bottom: 1px; }
-.value { font-size: 0.75rem; font-weight: 800; }
+.value { font-size: 0.75rem; font-weight: 800; transition: color 0.3s ease; }
+.value.updated { animation: pulse-green 0.5s ease; }
+
+@keyframes pulse-green {
+    0% { color: var(--success); text-shadow: 0 0 5px var(--success); }
+    100% { color: inherit; text-shadow: none; }
+}
 
 .footer-info { display: none; } /* 메인에선 숨김 */
 
@@ -108,6 +146,12 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     padding: 20px;
     position: relative;
     border: 1px solid #333;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
@@ -139,6 +183,20 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     width: 100%;
 }
 .save-btn:active { opacity: 0.8; }
+
+/* Danger Zone */
+.danger-zone { margin-top: 30px; border-top: 1px dashed #555; padding-top: 15px; text-align: center; }
+.delete-btn {
+    background: transparent;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+.delete-btn:hover { background: #ff4d4d; color: white; }
 
 /* Metrics History Styles */
 .metrics-history-section { margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }

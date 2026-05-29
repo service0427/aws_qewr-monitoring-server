@@ -120,6 +120,18 @@ def update_memo(server_id: int, data: MemoRequest, db: Session = Depends(get_db)
     db.commit()
     return {"status": "ok"}
 
+@app.delete("/api/servers/{server_id}")
+def delete_server(server_id: int, db: Session = Depends(get_db)):
+    server = db.query(models.Server).filter(models.Server.id == server_id).first()
+    if not server:
+        raise HTTPException(status_code=404, detail="Server not found")
+    
+    # Delete related metrics first (cascade)
+    db.query(models.Metric).filter(models.Metric.server_id == server_id).delete()
+    db.delete(server)
+    db.commit()
+    return {"status": "ok"}
+
 @app.get("/api/servers/{server_id}/metrics")
 def get_server_metrics(server_id: int, db: Session = Depends(get_db)):
     # Return last 100 metrics for the chart/list

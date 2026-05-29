@@ -14,6 +14,11 @@
             <div id="summary-bar">
                 <span id="alert-count" class="badge">Checking...</span>
             </div>
+            <div class="installer-copy-box" onclick="copyInstallerCommand()">
+                <i class="fas fa-terminal"></i>
+                <span id="installer-cmd">curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash</span>
+                <i class="far fa-copy"></i>
+            </div>
         </header>
 
         <main id="server-list">
@@ -48,6 +53,10 @@
                     <label class="spec-label">Server Memo (Location/Note):</label>
                     <input type="text" id="modal-memo-input" class="memo-input" placeholder="e.g. Rack A, Seoul Office...">
                     <button class="save-btn" onclick="saveMemo()">Save Memo</button>
+                </div>
+
+                <div class="danger-zone">
+                    <button class="delete-btn" onclick="confirmDelete()">Delete Server</button>
                 </div>
             </div>
         </div>
