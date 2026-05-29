@@ -59,7 +59,7 @@ async function updateDashboard() {
                         </span>
                         <div class="name-right">
                             ${server.remote_access_enabled ? `
-                            <a href="http://${server.ip_address}:5000" target="_blank" class="remote-link" onclick="event.stopPropagation()">
+                            <a href="http://${server.ip_address}:5000" target="_blank" class="remote-link" onclick="openRemote(event)">
                                 <i class="fas fa-desktop"></i>
                             </a>` : ''}
                             <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
@@ -100,6 +100,11 @@ function copyInstallerCommand() {
             box.style.borderColor = '#333';
         }, 2000);
     });
+}
+
+function openRemote(event) {
+    event.stopPropagation();
+    // <a> 태그의 기본 동작(href 이동)은 유지하면서 부모로의 클릭 이벤트 전파만 막음
 }
 
 function showDetails(serverId) {

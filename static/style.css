@@ -71,6 +71,8 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
 
 /* 서버 카드 스타일 - 컴팩트하게 변경 */
 .server-card {
+    position: relative;
+    z-index: 1;
     background: var(--card-bg);
     border-radius: 8px;
     padding: 12px;
@@ -99,11 +101,17 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
 }
 .name-right { display: flex; align-items: center; gap: 8px; }
 .remote-link {
+    position: relative;
+    z-index: 10;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    padding: 2px 4px;
+    font-size: 1.1rem;
+    padding: 8px;
+    margin: -4px; /* 내어쓰기로 여백 확보 */
     border-radius: 4px;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 .remote-link:hover { color: var(--success); background: rgba(0,230,118,0.1); }
 .remote-link:active { transform: scale(1.2); }
@@ -331,8 +339,8 @@ input:checked + .slider:before { transform: translateX(22px); }
         font-size: 0.55rem;
     }
     .remote-link {
-        font-size: 1rem;
-        padding: 4px 8px;
+        font-size: 1.2rem;
+        padding: 10px;
     }
     .metrics { 
         gap: 3px; 
