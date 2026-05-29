@@ -58,10 +58,6 @@ async function updateDashboard() {
                             ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
                         </span>
                         <div class="name-right">
-                            ${server.remote_access_enabled ? `
-                            <a href="http://${server.ip_address}:5000" target="_blank" class="remote-link" onclick="openRemote(event)">
-                                <i class="fas fa-desktop"></i>
-                            </a>` : ''}
                             <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
                         </div>
                     </div>
