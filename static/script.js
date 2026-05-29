@@ -131,48 +131,54 @@ async function saveMemo() {
 function closeModal() {
     document.getElementById('detail-modal').style.display = 'none';
     document.getElementById('metrics-history-list').style.display = 'none';
+    const btn = document.querySelector('.view-metrics-btn');
+    if (btn) btn.innerText = 'View Historical Metrics (Last 7 Days)';
     currentServerId = null;
 }
 
 async function toggleMetrics() {
     const list = document.getElementById('metrics-history-list');
+    const btn = document.querySelector('.view-metrics-btn');
     if (list.style.display === 'none') {
         list.style.display = 'block';
+        btn.innerText = 'Close Historical Metrics';
         await loadHistoricalMetrics();
     } else {
         list.style.display = 'none';
+        btn.innerText = 'View Historical Metrics (Last 7 Days)';
     }
 }
 
 async function loadHistoricalMetrics() {
     if (!currentServerId) return;
     const container = document.getElementById('metrics-data');
-    container.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
+    container.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Loading metrics...</td></tr>';
     
     try {
         const response = await fetch(`/api/servers/${currentServerId}/metrics`);
         const metrics = await response.json();
         
-        if (metrics.length === 0) {
-            container.innerHTML = '<tr><td colspan="4" style="text-align:center">No logs found.</td></tr>';
+        if (!metrics || metrics.length === 0) {
+            container.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">No logs found for the last 7 days.</td></tr>';
             return;
         }
 
         container.innerHTML = metrics.map(m => {
-            const time = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const date = new Date(m.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const dt = new Date(m.timestamp);
+            const timeStr = dt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const dateStr = dt.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' });
             return `
                 <tr>
-                    <td>${date} ${time}</td>
-                    <td>${m.cpu_usage.toFixed(0)}%</td>
-                    <td>${m.mem_usage.toFixed(0)}%</td>
+                    <td>${dateStr} ${timeStr}</td>
+                    <td style="color:${m.cpu_usage > 80 ? 'var(--danger)' : 'var(--success)'}">${m.cpu_usage.toFixed(1)}%</td>
+                    <td style="color:${m.mem_usage > 80 ? 'var(--danger)' : 'var(--success)'}">${m.mem_usage.toFixed(1)}%</td>
                     <td>${m.disk_usage.toFixed(0)}%</td>
                 </tr>
             `;
         }).join('');
     } catch (error) {
         console.error('Failed to load metrics:', error);
-        container.innerHTML = '<tr><td colspan="4" style="text-align:center">Error loading logs.</td></tr>';
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
     }
 }
 
