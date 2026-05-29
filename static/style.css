@@ -100,7 +100,21 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     width: 100%;
 }
 .name-right { display: flex; align-items: center; gap: 8px; }
-.remote-link { display: none !important; } /* 메인 대시보드에서는 아이콘 숨김 */
+.remote-link {
+    position: relative;
+    z-index: 10;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 8px;
+    margin: -4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.remote-link:hover { color: var(--success); background: rgba(0,230,118,0.1); }
+.remote-link:active { transform: scale(1.2); }
 
 .remote-access-section { margin-top: 15px; text-align: center; }
 .remote-btn-large {
