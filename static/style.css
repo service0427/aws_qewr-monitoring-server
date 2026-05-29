@@ -97,6 +97,17 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     align-items: center;
     width: 100%;
 }
+.name-right { display: flex; align-items: center; gap: 8px; }
+.remote-link {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.remote-link:hover { color: var(--success); background: rgba(0,230,118,0.1); }
+.remote-link:active { transform: scale(1.2); }
+
 .ip-small { font-size: 0.65rem; opacity: 0.6; font-weight: normal; margin-left: 4px; }
 .memo-small { font-size: 0.65rem; color: var(--success); opacity: 0.8; font-weight: normal; margin-left: 6px; }
 .time-ago { font-size: 0.6rem; color: var(--warning); font-weight: normal; }
@@ -318,6 +329,10 @@ input:checked + .slider:before { transform: translateX(22px); }
     }
     .time-ago {
         font-size: 0.55rem;
+    }
+    .remote-link {
+        font-size: 1rem;
+        padding: 4px 8px;
     }
     .metrics { 
         gap: 3px; 

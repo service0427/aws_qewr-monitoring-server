@@ -57,7 +57,12 @@ async function updateDashboard() {
                             ${server.name}
                             ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
                         </span>
-                        <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
+                        <div class="name-right">
+                            <a href="http://${server.ip_address}:5000" target="_blank" class="remote-link" onclick="event.stopPropagation()">
+                                <i class="fas fa-desktop"></i>
+                            </a>
+                            <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
+                        </div>
                     </div>
                     <div class="metrics">
                         <div class="metric-item ${isCpuAlert ? 'alert-active' : ''}">
