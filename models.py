@@ -44,6 +44,7 @@ class Server(Base):
     cpu_alert_enabled = Column(Integer, default=1) # 1 for True, 0 for False
     mem_alert_enabled = Column(Integer, default=1)
     disk_alert_enabled = Column(Integer, default=1)
+    remote_access_enabled = Column(Integer, default=0) # Default to 0 (off)
 
     metrics = relationship("Metric", back_populates="server")
 

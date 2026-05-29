@@ -58,9 +58,10 @@ async function updateDashboard() {
                             ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
                         </span>
                         <div class="name-right">
+                            ${server.remote_access_enabled ? `
                             <a href="http://${server.ip_address}:5000" target="_blank" class="remote-link" onclick="event.stopPropagation()">
                                 <i class="fas fa-desktop"></i>
-                            </a>
+                            </a>` : ''}
                             <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
                         </div>
                     </div>
@@ -116,6 +117,7 @@ function showDetails(serverId) {
     document.getElementById('cpu-alert-toggle').checked = !!server.cpu_alert_enabled;
     document.getElementById('mem-alert-toggle').checked = !!server.mem_alert_enabled;
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
+    document.getElementById('remote-access-toggle').checked = !!server.remote_access_enabled;
 
     const specList = document.getElementById('modal-spec-list');
     
@@ -177,7 +179,8 @@ async function saveAlertSettings() {
         disk_threshold: parseFloat(document.getElementById('disk-threshold').value),
         cpu_alert_enabled: document.getElementById('cpu-alert-toggle').checked,
         mem_alert_enabled: document.getElementById('mem-alert-toggle').checked,
-        disk_alert_enabled: document.getElementById('disk-alert-toggle').checked
+        disk_alert_enabled: document.getElementById('disk-alert-toggle').checked,
+        remote_access_enabled: document.getElementById('remote-access-toggle').checked
     };
 
     try {
