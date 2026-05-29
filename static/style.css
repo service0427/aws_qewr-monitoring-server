@@ -242,3 +242,43 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
 .metrics-table tr:nth-child(even) { background: #0a0a0a; }
 
 .loading { text-align: center; padding: 50px; color: var(--text-secondary); font-style: italic; }
+
+/* Mobile Optimization (Simplified view to prevent clipping) */
+@media (max-width: 480px) {
+    #server-list { 
+        padding: 8px; 
+        gap: 6px; 
+    }
+    .server-card { 
+        padding: 10px 8px; 
+    }
+    /* Hide IP and Memo in grid view to save space */
+    .ip-small, .memo-small { 
+        display: none !important; 
+    }
+    .server-name { 
+        font-size: 0.75rem; 
+        margin-bottom: 8px;
+    }
+    .time-ago {
+        font-size: 0.55rem;
+    }
+    .metrics { 
+        gap: 3px; 
+    }
+    .metric-item {
+        padding: 3px 1px;
+    }
+    .value { 
+        font-size: 0.65rem; 
+    }
+    .installer-copy-box {
+        font-size: 0.55rem;
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    h1 {
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+    }
+}
