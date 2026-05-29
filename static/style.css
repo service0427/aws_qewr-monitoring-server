@@ -100,21 +100,26 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     width: 100%;
 }
 .name-right { display: flex; align-items: center; gap: 8px; }
-.remote-link {
-    position: relative;
-    z-index: 10;
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    padding: 8px;
-    margin: -4px; /* 내어쓰기로 여백 확보 */
-    border-radius: 4px;
-    transition: all 0.2s;
-    display: inline-flex;
+.remote-link { display: none !important; } /* 메인 대시보드에서는 아이콘 숨김 */
+
+.remote-access-section { margin-top: 15px; text-align: center; }
+.remote-btn-large {
+    display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    background: #222;
+    color: var(--success);
+    border: 1px solid var(--success);
+    padding: 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s;
 }
-.remote-link:hover { color: var(--success); background: rgba(0,230,118,0.1); }
-.remote-link:active { transform: scale(1.2); }
+.remote-btn-large:hover { background: var(--success); color: black; }
+.remote-btn-large:active { transform: scale(0.98); }
 
 .ip-small { font-size: 0.65rem; opacity: 0.6; font-weight: normal; margin-left: 4px; }
 .memo-small { font-size: 0.65rem; color: var(--success); opacity: 0.8; font-weight: normal; margin-left: 6px; }

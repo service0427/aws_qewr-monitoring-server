@@ -124,6 +124,16 @@ function showDetails(serverId) {
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
     document.getElementById('remote-access-toggle').checked = !!server.remote_access_enabled;
 
+    // Remote Access Button in Modal
+    const remoteSection = document.getElementById('remote-access-section');
+    const remoteBtn = document.getElementById('modal-remote-btn');
+    if (server.remote_access_enabled) {
+        remoteSection.style.display = 'block';
+        remoteBtn.href = `http://${server.ip_address}:5000`;
+    } else {
+        remoteSection.style.display = 'none';
+    }
+
     const specList = document.getElementById('modal-spec-list');
     
     let specs = {};
