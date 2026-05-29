@@ -45,27 +45,32 @@ async function updateDashboard() {
             const isCpuUpdated = oldServer && oldServer.cpu_usage.toFixed(0) !== server.cpu_usage.toFixed(0);
             const isMemUpdated = oldServer && oldServer.mem_usage.toFixed(0) !== server.mem_usage.toFixed(0);
 
+            // Alert logic for specific metrics
+            const isCpuAlert = server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold;
+            const isMemAlert = server.mem_alert_enabled && server.mem_usage > server.mem_threshold;
+            const isDiskAlert = server.disk_alert_enabled && server.disk_usage > server.disk_threshold;
+
             return `
                 <div class="server-card ${server.status}" onclick="showDetails(${server.id})">
                     <div class="server-name">
                         <span>
-                            ${server.name} <span class="ip-small">(${server.ip_address})</span>
+                            ${server.name}
                             ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
                         </span>
                         <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
                     </div>
                     <div class="metrics">
-                        <div class="metric-item">
+                        <div class="metric-item ${isCpuAlert ? 'alert-active' : ''}">
                             <span class="label">CPU</span>
-                            <span class="value ${server.cpu_usage > 90 ? 'high' : ''} ${isCpuUpdated ? 'updated' : ''}">${server.cpu_usage.toFixed(0)}%</span>
+                            <span class="value ${isCpuAlert ? 'high' : ''} ${isCpuUpdated ? 'updated' : ''}">${server.cpu_usage.toFixed(0)}%</span>
                         </div>
-                        <div class="metric-item">
+                        <div class="metric-item ${isMemAlert ? 'alert-active' : ''}">
                             <span class="label">MEM</span>
-                            <span class="value ${server.mem_usage > 90 ? 'high' : ''} ${isMemUpdated ? 'updated' : ''}">${server.mem_usage.toFixed(0)}%</span>
+                            <span class="value ${isMemAlert ? 'high' : ''} ${isMemUpdated ? 'updated' : ''}">${server.mem_usage.toFixed(0)}%</span>
                         </div>
-                        <div class="metric-item">
+                        <div class="metric-item ${isDiskAlert ? 'alert-active' : ''}">
                             <span class="label">DSK</span>
-                            <span class="value">${server.disk_usage.toFixed(0)}%</span>
+                            <span class="value ${isDiskAlert ? 'high' : ''}">${server.disk_usage.toFixed(0)}%</span>
                         </div>
                     </div>
                 </div>
@@ -99,6 +104,14 @@ function showDetails(serverId) {
     document.getElementById('modal-server-name').innerText = server.name;
     document.getElementById('modal-memo-input').value = server.memo || '';
     
+    // Populate Alert Settings
+    document.getElementById('cpu-threshold').value = server.cpu_threshold || 90;
+    document.getElementById('mem-threshold').value = server.mem_threshold || 90;
+    document.getElementById('disk-threshold').value = server.disk_threshold || 90;
+    document.getElementById('cpu-alert-toggle').checked = !!server.cpu_alert_enabled;
+    document.getElementById('mem-alert-toggle').checked = !!server.mem_alert_enabled;
+    document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
+
     const specList = document.getElementById('modal-spec-list');
     
     let specs = {};
@@ -144,6 +157,36 @@ async function saveMemo() {
             updateDashboard(); // 즉시 대시보드 갱신
         } else {
             alert('Failed to save memo.');
+        }
+    } catch (error) {
+        console.error('Save failed:', error);
+        alert('An error occurred while saving.');
+    }
+}
+
+async function saveAlertSettings() {
+    if (!currentServerId) return;
+    const settings = {
+        cpu_threshold: parseFloat(document.getElementById('cpu-threshold').value),
+        mem_threshold: parseFloat(document.getElementById('mem-threshold').value),
+        disk_threshold: parseFloat(document.getElementById('disk-threshold').value),
+        cpu_alert_enabled: document.getElementById('cpu-alert-toggle').checked,
+        mem_alert_enabled: document.getElementById('mem-alert-toggle').checked,
+        disk_alert_enabled: document.getElementById('disk-alert-toggle').checked
+    };
+
+    try {
+        const response = await fetch(`/api/servers/${currentServerId}/alert_settings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+            alert('Alert settings saved successfully!');
+            updateDashboard();
+        } else {
+            alert('Failed to save settings.');
         }
     } catch (error) {
         console.error('Save failed:', error);

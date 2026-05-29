@@ -36,6 +36,14 @@ class Server(Base):
     uptime = Column(String(100), default="unknown")
     specs = Column(Text, nullable=True) # Detailed specs in JSON string
     memo = Column(String(255), nullable=True) # Manual note (e.g., location)
+    
+    # Alert Settings
+    cpu_threshold = Column(Float, default=90.0)
+    mem_threshold = Column(Float, default=90.0)
+    disk_threshold = Column(Float, default=90.0)
+    cpu_alert_enabled = Column(Integer, default=1) # 1 for True, 0 for False
+    mem_alert_enabled = Column(Integer, default=1)
+    disk_alert_enabled = Column(Integer, default=1)
 
     metrics = relationship("Metric", back_populates="server")
 

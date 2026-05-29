@@ -55,6 +55,27 @@
                     <button class="save-btn" onclick="saveMemo()">Save Memo</button>
                 </div>
 
+                <!-- Alert Settings Section -->
+                <div class="settings-section">
+                    <h3>Alert Settings</h3>
+                    <div class="setting-row">
+                        <label>CPU Threshold (%)</label>
+                        <input type="number" id="cpu-threshold" class="small-input">
+                        <label class="switch"><input type="checkbox" id="cpu-alert-toggle"><span class="slider"></span></label>
+                    </div>
+                    <div class="setting-row">
+                        <label>MEM Threshold (%)</label>
+                        <input type="number" id="mem-threshold" class="small-input">
+                        <label class="switch"><input type="checkbox" id="mem-alert-toggle"><span class="slider"></span></label>
+                    </div>
+                    <div class="setting-row">
+                        <label>DSK Threshold (%)</label>
+                        <input type="number" id="disk-threshold" class="small-input">
+                        <label class="switch"><input type="checkbox" id="disk-alert-toggle"><span class="slider"></span></label>
+                    </div>
+                    <button class="save-btn secondary" onclick="saveAlertSettings()">Save Alert Settings</button>
+                </div>
+
                 <div class="danger-zone">
                     <button class="delete-btn" onclick="confirmDelete()">Delete Server</button>
                 </div>

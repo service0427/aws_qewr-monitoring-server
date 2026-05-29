@@ -82,15 +82,18 @@ async def receive_ping(data: PingRequest, db: Session = Depends(get_db)):
     )
     db.add(metric)
     
-    # 4. Threshold Alert Logic
+    # 4. Threshold Alert Logic (Using per-server settings)
     alert_triggered = False
     alert_msg = f"⚠️ [ALARM] {data.server_name}\n"
     
-    if data.cpu_usage > 90.0:
-        alert_msg += f"- CPU: {data.cpu_usage}%\n"
+    if server.cpu_alert_enabled and data.cpu_usage > server.cpu_threshold:
+        alert_msg += f"- CPU: {data.cpu_usage}% (Threshold: {server.cpu_threshold}%)\n"
         alert_triggered = True
-    if data.mem_usage > 90.0:
-        alert_msg += f"- MEM: {data.mem_usage}%\n"
+    if server.mem_alert_enabled and data.mem_usage > server.mem_threshold:
+        alert_msg += f"- MEM: {data.mem_usage}% (Threshold: {server.mem_threshold}%)\n"
+        alert_triggered = True
+    if server.disk_alert_enabled and data.disk_usage > server.disk_threshold:
+        alert_msg += f"- DISK: {data.disk_usage}% (Threshold: {server.disk_threshold}%)\n"
         alert_triggered = True
     
     if alert_triggered:
@@ -99,6 +102,30 @@ async def receive_ping(data: PingRequest, db: Session = Depends(get_db)):
     else:
         server.status = "online"
 
+    db.commit()
+    return {"status": "ok"}
+
+class AlertSettingsRequest(BaseModel):
+    cpu_threshold: float
+    mem_threshold: float
+    disk_threshold: float
+    cpu_alert_enabled: bool
+    mem_alert_enabled: bool
+    disk_alert_enabled: bool
+
+@app.post("/api/servers/{server_id}/alert_settings")
+def update_alert_settings(server_id: int, data: AlertSettingsRequest, db: Session = Depends(get_db)):
+    server = db.query(models.Server).filter(models.Server.id == server_id).first()
+    if not server:
+        raise HTTPException(status_code=404, detail="Server not found")
+    
+    server.cpu_threshold = data.cpu_threshold
+    server.mem_threshold = data.mem_threshold
+    server.disk_threshold = data.disk_threshold
+    server.cpu_alert_enabled = 1 if data.cpu_alert_enabled else 0
+    server.mem_alert_enabled = 1 if data.mem_alert_enabled else 0
+    server.disk_alert_enabled = 1 if data.disk_alert_enabled else 0
+    
     db.commit()
     return {"status": "ok"}
 
