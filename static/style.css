@@ -252,9 +252,13 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
     .server-card { 
         padding: 10px 8px; 
     }
-    /* Hide IP and Memo in grid view to save space */
-    .ip-small, .memo-small { 
+    /* Hide IP but show Memo in grid view if space permits */
+    .ip-small { 
         display: none !important; 
+    }
+    .memo-small {
+        display: inline !important;
+        font-size: 0.6rem;
     }
     .server-name { 
         font-size: 0.75rem; 

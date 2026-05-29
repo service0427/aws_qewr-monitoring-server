@@ -5,7 +5,7 @@ function getTimeAgo(lastPing) {
     const pingDate = lastPing.endsWith('Z') ? new Date(lastPing) : new Date(lastPing + 'Z');
     const diff = Math.floor((new Date() - pingDate) / 1000);
     
-    if (diff < 0) return "just now";
+    if (diff < 0) return "now";
     if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     return `${Math.floor(diff / 3600)}h ago`;
