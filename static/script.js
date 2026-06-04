@@ -108,6 +108,27 @@ function showDetails(serverId) {
     if (!server) return;
 
     currentServerId = serverId;
+
+    // 1. Parse Specs and Determine Best Remote IP
+    let specs = {};
+    try {
+        specs = JSON.parse(server.specs || '{}');
+    } catch (e) {
+        specs = { "Info": server.specs };
+    }
+
+    let remoteIp = server.ip_address;
+    const allIpsStr = specs["All IPs"] || "";
+    if (allIpsStr.includes("192.168.")) {
+        // Find tailscale IP (starts with 100.) in the "All IPs" string
+        const tsMatch = allIpsStr.match(/100\.\d+\.\d+\.\d+/);
+        if (tsMatch) {
+            remoteIp = tsMatch[0];
+            console.log(`Router detected (192.168). Using Tailscale IP: ${remoteIp}`);
+        }
+    }
+
+    // 2. Populate Modal Fields
     document.getElementById('modal-server-name').innerText = server.name;
     document.getElementById('modal-memo-input').value = server.memo || '';
     
@@ -120,24 +141,17 @@ function showDetails(serverId) {
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
     document.getElementById('remote-access-toggle').checked = !!server.remote_access_enabled;
 
-    // Remote Access Button in Modal
+    // 3. Remote Access Button in Modal
     const remoteSection = document.getElementById('remote-access-section');
     const remoteBtn = document.getElementById('modal-remote-btn');
     if (server.remote_access_enabled) {
         remoteSection.style.display = 'block';
-        remoteBtn.href = `http://${server.ip_address}:5000`;
+        remoteBtn.href = `http://${remoteIp}:5000`;
     } else {
         remoteSection.style.display = 'none';
     }
 
     const specList = document.getElementById('modal-spec-list');
-    
-    let specs = {};
-    try {
-        specs = JSON.parse(server.specs || '{}');
-    } catch (e) {
-        specs = { "Info": server.specs };
-    }
 
     const basicInfo = {
         "IP Address": server.ip_address,
