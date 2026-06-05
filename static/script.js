@@ -109,23 +109,12 @@ function showDetails(serverId) {
 
     currentServerId = serverId;
 
-    // 1. Parse Specs and Determine Best Remote IP
+    // 1. Parse Specs
     let specs = {};
     try {
         specs = JSON.parse(server.specs || '{}');
     } catch (e) {
         specs = { "Info": server.specs };
-    }
-
-    let remoteIp = server.ip_address;
-    const allIpsStr = specs["All IPs"] || "";
-    if (allIpsStr.includes("192.168.")) {
-        // Find tailscale IP (starts with 100.) in the "All IPs" string
-        const tsMatch = allIpsStr.match(/100\.\d+\.\d+\.\d+/);
-        if (tsMatch) {
-            remoteIp = tsMatch[0];
-            console.log(`Router detected (192.168). Using Tailscale IP: ${remoteIp}`);
-        }
     }
 
     // 2. Populate Modal Fields
@@ -139,14 +128,24 @@ function showDetails(serverId) {
     document.getElementById('cpu-alert-toggle').checked = !!server.cpu_alert_enabled;
     document.getElementById('mem-alert-toggle').checked = !!server.mem_alert_enabled;
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
-    document.getElementById('remote-access-toggle').checked = !!server.remote_access_enabled;
+    document.getElementById('remote-access-type').value = server.remote_access_type || 0;
 
     // 3. Remote Access Button in Modal
     const remoteSection = document.getElementById('remote-access-section');
     const remoteBtn = document.getElementById('modal-remote-btn');
-    if (server.remote_access_enabled) {
+    
+    if (server.remote_access_type && server.remote_access_type > 0) {
         remoteSection.style.display = 'block';
-        remoteBtn.href = `http://${remoteIp}:5000`;
+        let finalRemoteIp = server.ip_address;
+        
+        if (server.remote_access_type == 2) { // Tailscale
+            const allIpsStr = specs["All IPs"] || "";
+            const tsMatch = allIpsStr.match(/100\.\d+\.\d+\.\d+/);
+            if (tsMatch) {
+                finalRemoteIp = tsMatch[0];
+            }
+        }
+        remoteBtn.href = `http://${finalRemoteIp}:5000`;
     } else {
         remoteSection.style.display = 'none';
     }
