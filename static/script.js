@@ -16,11 +16,9 @@ async function updateDashboard() {
         const response = await fetch('/api/servers', { cache: 'no-store' });
         const servers = await response.json();
         
-        // 데이터 변화 감지를 위해 이전 데이터와 비교 로직 추가 가능하지만 간단히 갱신
         const container = document.getElementById('server-list');
         const alertBadge = document.getElementById('alert-count');
         
-        // 정렬 기준을 Name으로 변경
         servers.sort((a, b) => a.name.localeCompare(b.name));
 
         const alertServers = servers.filter(s => s.status !== 'online').length;
@@ -45,7 +43,6 @@ async function updateDashboard() {
             const isCpuUpdated = oldServer && oldServer.cpu_usage.toFixed(0) !== server.cpu_usage.toFixed(0);
             const isMemUpdated = oldServer && oldServer.mem_usage.toFixed(0) !== server.mem_usage.toFixed(0);
 
-            // Alert logic for specific metrics
             const isCpuAlert = server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold;
             const isMemAlert = server.mem_alert_enabled && server.mem_usage > server.mem_threshold;
             const isDiskAlert = server.disk_alert_enabled && server.disk_usage > server.disk_threshold;
@@ -100,7 +97,6 @@ function copyInstallerCommand() {
 
 function openRemote(event) {
     event.stopPropagation();
-    // <a> 태그의 기본 동작(href 이동)은 유지하면서 부모로의 클릭 이벤트 전파만 막음
 }
 
 function showDetails(serverId) {
@@ -109,7 +105,6 @@ function showDetails(serverId) {
 
     currentServerId = serverId;
 
-    // 1. Parse Specs
     let specs = {};
     try {
         specs = JSON.parse(server.specs || '{}');
@@ -117,11 +112,9 @@ function showDetails(serverId) {
         specs = { "Info": server.specs };
     }
 
-    // 2. Populate Modal Fields
     document.getElementById('modal-server-name').innerText = server.name;
     document.getElementById('modal-memo-input').value = server.memo || '';
     
-    // Populate Alert Settings
     document.getElementById('cpu-threshold').value = server.cpu_threshold || 90;
     document.getElementById('mem-threshold').value = server.mem_threshold || 90;
     document.getElementById('disk-threshold').value = server.disk_threshold || 90;
@@ -130,7 +123,6 @@ function showDetails(serverId) {
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
     document.getElementById('remote-access-type').value = server.remote_access_type || 0;
 
-    // 3. Remote Access Button in Modal
     const remoteSection = document.getElementById('remote-access-section');
     const remoteBtn = document.getElementById('modal-remote-btn');
     
@@ -151,7 +143,6 @@ function showDetails(serverId) {
     }
 
     const specList = document.getElementById('modal-spec-list');
-
     const basicInfo = {
         "IP Address": server.ip_address,
         "Status": server.status,
@@ -159,7 +150,6 @@ function showDetails(serverId) {
         "Last Ping": new Date(server.last_ping).toLocaleString(),
         "Hardware ID": server.hardware_id
     };
-
     const allInfo = { ...basicInfo, ...specs };
 
     specList.innerHTML = Object.entries(allInfo).map(([key, value]) => `
@@ -182,10 +172,9 @@ async function saveMemo() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ memo: memoValue })
         });
-
         if (response.ok) {
             alert('Memo saved successfully!');
-            updateDashboard(); // 즉시 대시보드 갱신
+            updateDashboard();
         } else {
             alert('Failed to save memo.');
         }
@@ -213,7 +202,6 @@ async function saveAlertSettings() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(settings)
         });
-
         if (response.ok) {
             alert('Alert settings saved successfully!');
             updateDashboard();
@@ -228,7 +216,6 @@ async function saveAlertSettings() {
 
 async function confirmDelete() {
     if (!currentServerId) return;
-    
     const confirmation = prompt('서버를 삭제하시겠습니까? 삭제하려면 "확인"이라고 입력해주세요.');
     if (confirmation === '확인') {
         await deleteServer();
@@ -239,10 +226,7 @@ async function confirmDelete() {
 
 async function deleteServer() {
     try {
-        const response = await fetch(`/api/servers/${currentServerId}`, {
-            method: 'DELETE'
-        });
-
+        const response = await fetch(`/api/servers/${currentServerId}`, { method: 'DELETE' });
         if (response.ok) {
             alert('서버가 성공적으로 삭제되었습니다.');
             closeModal();
@@ -304,22 +288,6 @@ async function loadHistoricalMetrics() {
                 </tr>
             `;
         }).join('');
-    } catch (error) {
-        console.error('Failed to load metrics:', error);
-        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
-    }
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById('detail-modal');
-    if (event.target == modal) {
-        closeModal();
-    }
-}
-
-setInterval(updateDashboard, 10000);
-updateDashboard();
-'');
     } catch (error) {
         console.error('Failed to load metrics:', error);
         container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
