@@ -227,6 +227,7 @@ h1 { margin: 0; font-size: 1rem; letter-spacing: 3px; color: var(--text-secondar
 .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .setting-row label { font-size: 0.8rem; color: var(--text-secondary); flex: 1; }
 .small-input { width: 60px; background: #121212; border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; margin: 0 10px; text-align: center; }
+.small-select { background: #121212; border: 1px solid #444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
 
 /* Switch Toggle Style */
 .switch { 

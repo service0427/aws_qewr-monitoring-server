@@ -205,7 +205,7 @@ async function saveAlertSettings() {
         cpu_alert_enabled: document.getElementById('cpu-alert-toggle').checked,
         mem_alert_enabled: document.getElementById('mem-alert-toggle').checked,
         disk_alert_enabled: document.getElementById('disk-alert-toggle').checked,
-        remote_access_enabled: document.getElementById('remote-access-toggle').checked
+        remote_access_type: parseInt(document.getElementById('remote-access-type').value)
     };
 
     try {
@@ -305,6 +305,22 @@ async function loadHistoricalMetrics() {
                 </tr>
             `;
         }).join('');
+    } catch (error) {
+        console.error('Failed to load metrics:', error);
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('detail-modal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+setInterval(updateDashboard, 10000);
+updateDashboard();
+'');
     } catch (error) {
         console.error('Failed to load metrics:', error);
         container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';

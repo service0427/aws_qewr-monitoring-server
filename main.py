@@ -112,7 +112,7 @@ class AlertSettingsRequest(BaseModel):
     cpu_alert_enabled: bool
     mem_alert_enabled: bool
     disk_alert_enabled: bool
-    remote_access_enabled: bool
+    remote_access_type: int
 
 @app.post("/api/servers/{server_id}/alert_settings")
 def update_alert_settings(server_id: int, data: AlertSettingsRequest, db: Session = Depends(get_db)):
@@ -126,7 +126,7 @@ def update_alert_settings(server_id: int, data: AlertSettingsRequest, db: Sessio
     server.cpu_alert_enabled = 1 if data.cpu_alert_enabled else 0
     server.mem_alert_enabled = 1 if data.mem_alert_enabled else 0
     server.disk_alert_enabled = 1 if data.disk_alert_enabled else 0
-    server.remote_access_enabled = 1 if data.remote_access_enabled else 0
+    server.remote_access_type = data.remote_access_type
     
     db.commit()
     return {"status": "ok"}

@@ -44,7 +44,7 @@ class Server(Base):
     cpu_alert_enabled = Column(Integer, default=1) # 1 for True, 0 for False
     mem_alert_enabled = Column(Integer, default=1)
     disk_alert_enabled = Column(Integer, default=1)
-    remote_access_enabled = Column(Integer, default=0) # Default to 0 (off)
+    remote_access_type = Column(Integer, default=0) # 0: Off, 1: IPv4, 2: Tailscale
 
     metrics = relationship("Metric", back_populates="server")
 

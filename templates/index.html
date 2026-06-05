@@ -81,8 +81,12 @@
                         <label class="switch"><input type="checkbox" id="disk-alert-toggle"><span class="slider"></span></label>
                     </div>
                     <div class="setting-row">
-                        <label>Show Remote Button (Port 5000)</label>
-                        <label class="switch"><input type="checkbox" id="remote-access-toggle"><span class="slider"></span></label>
+                        <label>Remote Button (Port 5000)</label>
+                        <select id="remote-access-type" class="small-select">
+                            <option value="0">Off</option>
+                            <option value="1">Public IPv4</option>
+                            <option value="2">Tailscale IP</option>
+                        </select>
                     </div>
                     <button class="save-btn secondary" onclick="saveAlertSettings()">Save Alert Settings</button>
                 </div>
