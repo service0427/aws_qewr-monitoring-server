@@ -11,23 +11,10 @@ function getTimeAgo(lastPing) {
     return `${Math.floor(diff / 3600)}h ago`;
 }
 
-function updateClock() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ko-KR', { hour12: false });
-    const dateStr = now.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' });
-    const clockEl = document.getElementById('current-time');
-    if (clockEl) clockEl.innerText = `${dateStr} ${timeStr}`;
-}
-
 async function updateDashboard() {
     try {
         const response = await fetch('/api/servers', { cache: 'no-store' });
         const servers = await response.json();
-        
-        // 갱신 시간 표시
-        const now = new Date();
-        const refreshEl = document.getElementById('refresh-time');
-        if (refreshEl) refreshEl.innerText = `Refreshed: ${now.toLocaleTimeString('ko-KR', { hour12: false })}`;
         
         const container = document.getElementById('server-list');
         const alertBadge = document.getElementById('alert-count');
@@ -318,6 +305,26 @@ window.onclick = function(event) {
 
 setInterval(updateClock, 1000);
 updateClock();
+
+setInterval(updateDashboard, 10000);
+updateDashboard();
+d>
+                    <td>${m.disk_usage.toFixed(0)}%</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load metrics:', error);
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('detail-modal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 
 setInterval(updateDashboard, 10000);
 updateDashboard();
