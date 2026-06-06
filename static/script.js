@@ -160,6 +160,7 @@ function showDetails(serverId) {
     `).join('');
 
     document.getElementById('detail-modal').style.display = 'flex';
+    document.body.classList.add('modal-open');
 }
 
 async function saveMemo() {
@@ -287,6 +288,25 @@ async function loadHistoricalMetrics() {
                     <td>${m.disk_usage.toFixed(0)}%</td>
                 </tr>
             `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load metrics:', error);
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('detail-modal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+setInterval(updateDashboard, 10000);
+updateDashboard();
+
+;
+
         }).join('');
     } catch (error) {
         console.error('Failed to load metrics:', error);
