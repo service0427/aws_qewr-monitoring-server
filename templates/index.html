@@ -11,14 +11,15 @@
 <body>
     <div id="app">
         <header>
-            <h1>QEWR MONITOR</h1>
-            <div id="summary-bar">
-                <span id="alert-count" class="badge">Checking...</span>
-            </div>
-            <div class="installer-copy-box" onclick="copyInstallerCommand()">
-                <i class="fas fa-terminal"></i>
-                <span id="installer-cmd">curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash</span>
-                <i class="far fa-copy"></i>
+            <div class="header-main">
+                <div id="summary-bar">
+                    <span id="alert-count" class="badge">Checking...</span>
+                </div>
+                <div class="installer-copy-box" onclick="copyInstallerCommand()">
+                    <i class="fas fa-terminal"></i>
+                    <span id="installer-cmd">curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash</span>
+                    <i class="far fa-copy"></i>
+                </div>
             </div>
         </header>
 

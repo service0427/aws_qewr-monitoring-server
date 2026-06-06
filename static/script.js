@@ -86,17 +86,13 @@ function copyInstallerCommand() {
     navigator.clipboard.writeText(cmd).then(() => {
         const box = document.querySelector('.installer-copy-box');
         const originalHtml = box.innerHTML;
-        box.innerHTML = '<i class="fas fa-check"></i> <span>Copied to clipboard!</span>';
+        box.innerHTML = '<i class="fas fa-check"></i> <span>Copied!</span>';
         box.style.borderColor = 'var(--success)';
         setTimeout(() => {
             box.innerHTML = originalHtml;
             box.style.borderColor = '#333';
         }, 2000);
     });
-}
-
-function openRemote(event) {
-    event.stopPropagation();
 }
 
 function showDetails(serverId) {
@@ -159,7 +155,7 @@ function showDetails(serverId) {
         </div>
     `).join('');
 
-    document.getElementById('detail-modal').style.display = 'block'; // flex 대신 block (z-index/scroll 이슈 방지)
+    document.getElementById('detail-modal').style.display = 'block';
     document.body.classList.add('modal-open');
 }
 
@@ -286,29 +282,6 @@ async function loadHistoricalMetrics() {
                     <td>${dateStr} ${timeStr}</td>
                     <td style="color:${m.cpu_usage > 80 ? 'var(--danger)' : 'var(--success)'}">${m.cpu_usage.toFixed(1)}%</td>
                     <td style="color:${m.mem_usage > 80 ? 'var(--danger)' : 'var(--success)'}">${m.mem_usage.toFixed(1)}%</td>
-                    <td>${m.disk_usage.toFixed(0)}%</td>
-                </tr>
-            `;
-        }).join('');
-    } catch (error) {
-        console.error('Failed to load metrics:', error);
-        container.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--danger); padding:20px;">Error loading logs.</td></tr>';
-    }
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById('detail-modal');
-    if (event.target == modal) {
-        closeModal();
-    }
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-
-setInterval(updateDashboard, 10000);
-updateDashboard();
-d>
                     <td>${m.disk_usage.toFixed(0)}%</td>
                 </tr>
             `;
