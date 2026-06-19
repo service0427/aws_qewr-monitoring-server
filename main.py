@@ -143,6 +143,7 @@ def list_servers(response: Response, db: Session = Depends(get_db)):
 
 class MemoRequest(BaseModel):
     memo: str
+    location: str = ""
 
 @app.post("/api/servers/{server_id}/memo")
 def update_memo(server_id: int, data: MemoRequest, db: Session = Depends(get_db)):
@@ -150,6 +151,7 @@ def update_memo(server_id: int, data: MemoRequest, db: Session = Depends(get_db)
     if not server:
         raise HTTPException(status_code=404, detail="Server not found")
     server.memo = data.memo
+    server.location = data.location
     db.commit()
     return {"status": "ok"}
 

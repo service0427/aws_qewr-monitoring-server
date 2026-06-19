@@ -360,6 +360,11 @@ input:checked + .slider:before { transform: translateX(22px); }
     }
 }
 
+.server-card.adb-warning {
+    border-left-color: var(--warning) !important;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
 /* ADB Device Badge and Warning Styles */
 .adb-badge {
     font-size: 0.65rem;
@@ -382,7 +387,33 @@ input:checked + .slider:before { transform: translateX(22px); }
     border: 1px solid rgba(255, 77, 77, 0.4);
     animation: blink 1.5s infinite;
 }
-.server-card.adb-warning {
-    border-left-color: var(--warning) !important;
-    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+
+/* Card Meta Section (ADB / Git) */
+.card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+.meta-item {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.meta-item.git-ver {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #333;
+}
+.location-small {
+    font-size: 0.65rem;
+    color: var(--success);
+    margin-left: 6px;
+    font-weight: normal;
+    opacity: 0.85;
 }

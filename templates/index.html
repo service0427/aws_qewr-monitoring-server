@@ -58,9 +58,11 @@
                 </div>
 
                 <div class="memo-section">
-                    <label class="spec-label">Server Memo (Location/Note):</label>
-                    <input type="text" id="modal-memo-input" class="memo-input" placeholder="e.g. Rack A, Seoul Office...">
-                    <button class="save-btn" onclick="saveMemo()">Save Memo</button>
+                    <label class="spec-label">Installation Location:</label>
+                    <input type="text" id="modal-location-input" class="memo-input" placeholder="e.g. Rack A, Seoul Office...">
+                    <label class="spec-label" style="margin-top: 10px; display: block;">Server Memo / Note:</label>
+                    <input type="text" id="modal-memo-input" class="memo-input" placeholder="e.g. Main database, backup agent...">
+                    <button class="save-btn" onclick="saveMemoAndLocation()">Save Location & Memo</button>
                 </div>
 
                 <!-- Alert Settings Section -->

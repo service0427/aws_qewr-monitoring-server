@@ -35,7 +35,8 @@ class Server(Base):
     disk_usage = Column(Float, default=0.0)
     uptime = Column(String(100), default="unknown")
     specs = Column(Text, nullable=True) # Detailed specs in JSON string
-    memo = Column(String(255), nullable=True) # Manual note (e.g., location)
+    memo = Column(String(255), nullable=True) # Manual note
+    location = Column(String(100), nullable=True) # Installation location
     expected_devices = Column(Integer, default=0)
     current_devices = Column(Integer, default=0)
     
