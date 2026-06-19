@@ -47,12 +47,18 @@ async function updateDashboard() {
             const isMemAlert = server.mem_alert_enabled && server.mem_usage > server.mem_threshold;
             const isDiskAlert = server.disk_alert_enabled && server.disk_usage > server.disk_threshold;
 
+            const adbMismatch = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
+            const adbBadge = server.expected_devices > 0 
+                ? `<span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}"><i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices}</span>`
+                : (server.current_devices > 0 ? `<span class="adb-badge match"><i class="fas fa-mobile-alt"></i> ${server.current_devices}</span>` : '');
+
             return `
-                <div class="server-card ${server.status}" onclick="showDetails(${server.id})">
+                <div class="server-card ${server.status} ${adbMismatch ? 'adb-warning' : ''}" onclick="showDetails(${server.id})">
                     <div class="server-name">
                         <span>
                             ${server.name}
                             ${server.memo ? `<span class="memo-small"> - ${server.memo}</span>` : ''}
+                            ${adbBadge}
                         </span>
                         <div class="name-right">
                             <span class="time-ago">${getTimeAgo(server.last_ping)}</span>
@@ -118,6 +124,7 @@ function showDetails(serverId) {
     document.getElementById('mem-alert-toggle').checked = !!server.mem_alert_enabled;
     document.getElementById('disk-alert-toggle').checked = !!server.disk_alert_enabled;
     document.getElementById('remote-access-type').value = server.remote_access_type || 0;
+    document.getElementById('expected-devices').value = server.expected_devices || 0;
 
     const remoteSection = document.getElementById('remote-access-section');
     const remoteBtn = document.getElementById('modal-remote-btn');
@@ -144,7 +151,10 @@ function showDetails(serverId) {
         "Status": server.status,
         "Uptime": server.uptime,
         "Last Ping": new Date(server.last_ping).toLocaleString(),
-        "Hardware ID": server.hardware_id
+        "Hardware ID": server.hardware_id,
+        "ADB Devices (Current/Expected)": server.expected_devices > 0 
+            ? `${server.current_devices} / ${server.expected_devices}` 
+            : `${server.current_devices} (Expected: Not Set)`
     };
     const allInfo = { ...basicInfo, ...specs };
 
@@ -190,7 +200,8 @@ async function saveAlertSettings() {
         cpu_alert_enabled: document.getElementById('cpu-alert-toggle').checked,
         mem_alert_enabled: document.getElementById('mem-alert-toggle').checked,
         disk_alert_enabled: document.getElementById('disk-alert-toggle').checked,
-        remote_access_type: parseInt(document.getElementById('remote-access-type').value)
+        remote_access_type: parseInt(document.getElementById('remote-access-type').value),
+        expected_devices: parseInt(document.getElementById('expected-devices').value) || 0
     };
 
     try {

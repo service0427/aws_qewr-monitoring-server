@@ -359,3 +359,30 @@ input:checked + .slider:before { transform: translateX(22px); }
         gap: 6px;
     }
 }
+
+/* ADB Device Badge and Warning Styles */
+.adb-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.adb-badge.match {
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+}
+.adb-badge.mismatch {
+    background: rgba(255, 77, 77, 0.2);
+    color: var(--danger);
+    border: 1px solid rgba(255, 77, 77, 0.4);
+    animation: blink 1.5s infinite;
+}
+.server-card.adb-warning {
+    border-left-color: var(--warning) !important;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}

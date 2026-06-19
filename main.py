@@ -36,6 +36,7 @@ class PingRequest(BaseModel):
     disk_usage: float
     uptime: str
     specs: str = "{}"
+    current_devices: int = 0
 
 # Telegram Alert Function
 async def send_telegram_alert(message: str):
@@ -71,6 +72,7 @@ async def receive_ping(data: PingRequest, db: Session = Depends(get_db)):
     server.disk_usage = data.disk_usage
     server.uptime = data.uptime
     server.specs = data.specs
+    server.current_devices = data.current_devices
     
     # 3. Save historical metric
     metric = models.Metric(
@@ -113,6 +115,7 @@ class AlertSettingsRequest(BaseModel):
     mem_alert_enabled: bool
     disk_alert_enabled: bool
     remote_access_type: int
+    expected_devices: int = 0
 
 @app.post("/api/servers/{server_id}/alert_settings")
 def update_alert_settings(server_id: int, data: AlertSettingsRequest, db: Session = Depends(get_db)):
@@ -127,6 +130,7 @@ def update_alert_settings(server_id: int, data: AlertSettingsRequest, db: Sessio
     server.mem_alert_enabled = 1 if data.mem_alert_enabled else 0
     server.disk_alert_enabled = 1 if data.disk_alert_enabled else 0
     server.remote_access_type = data.remote_access_type
+    server.expected_devices = data.expected_devices
     
     db.commit()
     return {"status": "ok"}

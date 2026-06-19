@@ -36,6 +36,8 @@ class Server(Base):
     uptime = Column(String(100), default="unknown")
     specs = Column(Text, nullable=True) # Detailed specs in JSON string
     memo = Column(String(255), nullable=True) # Manual note (e.g., location)
+    expected_devices = Column(Integer, default=0)
+    current_devices = Column(Integer, default=0)
     
     # Alert Settings
     cpu_threshold = Column(Float, default=90.0)
