@@ -31,9 +31,13 @@ async function updateDashboard() {
         
         servers.sort((a, b) => a.name.localeCompare(b.name));
 
+        let totalServers = servers.length;
+        let onlineServers = 0;
+        let alertServers = 0;
+        let offlineServers = 0;
+
         let totalExpectedADB = 0;
         let totalCurrentADB = 0;
-        let offlineServers = 0;
 
         servers.forEach(s => {
             totalExpectedADB += s.expected_devices || 0;
@@ -41,21 +45,34 @@ async function updateDashboard() {
             
             const pingDate = parseLocalDate(s.last_ping);
             const diff = Math.floor((new Date() - pingDate) / 1000);
-            if (diff > 300) { // 5 minutes
+            
+            const isOffline = diff > 300; // 5 minutes
+            const isAlert = s.status === 'warning' || (s.cpu_alert_enabled && s.cpu_usage > s.cpu_threshold) || (s.mem_alert_enabled && s.mem_usage > s.mem_threshold) || (s.disk_alert_enabled && s.disk_usage > s.disk_threshold);
+            
+            if (isOffline) {
                 offlineServers++;
+            } else if (isAlert) {
+                alertServers++;
+            } else {
+                onlineServers++;
             }
         });
 
         let summaryHtml = '';
+        summaryHtml += `<span class="badge neutral"><i class="fas fa-server"></i> TOTAL: ${totalServers}</span> `;
+        summaryHtml += `<span class="badge success"><i class="fas fa-check-circle"></i> ONLINE: ${onlineServers}</span> `;
+        
+        if (alertServers > 0) {
+            summaryHtml += `<span class="badge warning"><i class="fas fa-exclamation-circle"></i> ALERT: ${alertServers}</span> `;
+        }
+        
         if (offlineServers > 0) {
-            summaryHtml += `<span class="badge critical"><i class="fas fa-exclamation-triangle"></i> ${offlineServers} OFFLINE SERVER(S)</span> `;
-        } else {
-            summaryHtml += `<span class="badge success"><i class="fas fa-check-circle"></i> ALL ONLINE (${servers.length}/${servers.length})</span> `;
+            summaryHtml += `<span class="badge critical"><i class="fas fa-times-circle"></i> OFFLINE: ${offlineServers}</span> `;
         }
 
         if (totalExpectedADB > 0 || totalCurrentADB > 0) {
             const adbMismatch = totalCurrentADB !== totalExpectedADB;
-            summaryHtml += `<span class="badge ${adbMismatch ? 'critical' : 'success'}"><i class="fas fa-mobile-alt"></i> TOTAL ADB: ${totalCurrentADB}/${totalExpectedADB}</span>`;
+            summaryHtml += `<span class="badge ${adbMismatch ? 'critical' : 'success'}"><i class="fas fa-mobile-alt"></i> ADB: ${totalCurrentADB}/${totalExpectedADB}</span>`;
         }
         
         if (summaryBar) {
