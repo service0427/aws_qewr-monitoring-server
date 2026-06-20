@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Qewr Monitoring</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
-    <link rel="stylesheet" href="/static/style.css?v=3.2">
+    <link rel="stylesheet" href="/static/style.css?v=3.3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div id="app">
         <header>
             <div class="header-main">
-                <div id="summary-bar">
-                    <span id="alert-count" class="badge">Checking...</span>
+                <div class="brand">
+                    <i class="fas fa-server logo-icon"></i>
+                    <span class="brand-name">QEWR MONITOR</span>
                 </div>
                 <div class="installer-copy-box" onclick="copyInstallerCommand()">
                     <i class="fas fa-terminal"></i>
@@ -22,6 +23,47 @@
                 </div>
             </div>
         </header>
+
+        <!-- Stats Overview Section -->
+        <section class="stats-overview-section">
+            <div class="stats-grid">
+                <div class="stats-card total active-filter" onclick="filterServers('all')">
+                    <div class="stats-icon"><i class="fas fa-server"></i></div>
+                    <div class="stats-info">
+                        <span class="stats-label">전체 서버</span>
+                        <span id="stats-total-val" class="stats-value">0</span>
+                    </div>
+                </div>
+                <div class="stats-card success" onclick="filterServers('online')">
+                    <div class="stats-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stats-info">
+                        <span class="stats-label">활성화 (정상)</span>
+                        <span id="stats-online-val" class="stats-value">0</span>
+                    </div>
+                </div>
+                <div class="stats-card warning" onclick="filterServers('warning')">
+                    <div class="stats-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="stats-info">
+                        <span class="stats-label">장애 (경고)</span>
+                        <span id="stats-alert-val" class="stats-value">0</span>
+                    </div>
+                </div>
+                <div class="stats-card danger" onclick="filterServers('offline')">
+                    <div class="stats-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="stats-info">
+                        <span class="stats-label">비활성화 (장애)</span>
+                        <span id="stats-offline-val" class="stats-value">0</span>
+                    </div>
+                </div>
+                <div class="stats-card adb">
+                    <div class="stats-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="stats-info">
+                        <span class="stats-label">ADB 기기 연결</span>
+                        <span id="stats-adb-val" class="stats-value">0 / 0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <main id="server-list">
             <div class="loading">서버 상태를 불러오는 중...</div>
@@ -104,6 +146,6 @@
             </div>
         </div>
     </div>
-    <script src="/static/script.js?v=3.2"></script>
+    <script src="/static/script.js?v=3.3"></script>
 </body>
 </html>

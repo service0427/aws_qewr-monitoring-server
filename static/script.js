@@ -1,5 +1,7 @@
 let currentServers = [];
 let currentServerId = null;
+let currentFilter = 'all';
+let prevServersMap = new Map();
 
 function parseLocalDate(dateStr) {
     if (!dateStr) return new Date();
@@ -21,13 +23,22 @@ function getTimeAgo(lastPing) {
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
+function filterServers(filterType) {
+    currentFilter = filterType;
+    document.querySelectorAll('.stats-card').forEach(card => {
+        card.classList.remove('active-filter');
+    });
+    const activeCard = document.querySelector(`.stats-card.${filterType}`);
+    if (activeCard) {
+        activeCard.classList.add('active-filter');
+    }
+    renderDashboardList();
+}
+
 async function updateDashboard() {
     try {
         const response = await fetch('/api/servers', { cache: 'no-store' });
         const servers = await response.json();
-        
-        const container = document.getElementById('server-list');
-        const summaryBar = document.getElementById('summary-bar');
         
         servers.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -47,7 +58,12 @@ async function updateDashboard() {
             const diff = Math.floor((new Date() - pingDate) / 1000);
             
             const isOffline = diff > 300; // 5 minutes
-            const isAlert = s.status === 'warning' || (s.cpu_alert_enabled && s.cpu_usage > s.cpu_threshold) || (s.mem_alert_enabled && s.mem_usage > s.mem_threshold) || (s.disk_alert_enabled && s.disk_usage > s.disk_threshold);
+            const isAdbAlert = s.expected_devices > 0 && s.current_devices !== s.expected_devices;
+            const isAlert = s.status === 'warning' || 
+                            (s.cpu_alert_enabled && s.cpu_usage > s.cpu_threshold) || 
+                            (s.mem_alert_enabled && s.mem_usage > s.mem_threshold) || 
+                            (s.disk_alert_enabled && s.disk_usage > s.disk_threshold) ||
+                            isAdbAlert;
             
             if (isOffline) {
                 offlineServers++;
@@ -58,97 +74,143 @@ async function updateDashboard() {
             }
         });
 
-        let summaryHtml = '';
-        summaryHtml += `<span class="badge neutral"><i class="fas fa-server"></i> TOTAL: ${totalServers}</span> `;
-        summaryHtml += `<span class="badge success"><i class="fas fa-check-circle"></i> ONLINE: ${onlineServers}</span> `;
+        // Update DOM elements for statistics
+        const elTotal = document.getElementById('stats-total-val');
+        const elOnline = document.getElementById('stats-online-val');
+        const elAlert = document.getElementById('stats-alert-val');
+        const elOffline = document.getElementById('stats-offline-val');
+        const elAdb = document.getElementById('stats-adb-val');
         
-        if (alertServers > 0) {
-            summaryHtml += `<span class="badge warning"><i class="fas fa-exclamation-circle"></i> ALERT: ${alertServers}</span> `;
-        }
+        if (elTotal) elTotal.innerText = totalServers;
+        if (elOnline) elOnline.innerText = onlineServers;
+        if (elAlert) elAlert.innerText = alertServers;
+        if (elOffline) elOffline.innerText = offlineServers;
         
-        if (offlineServers > 0) {
-            summaryHtml += `<span class="badge critical"><i class="fas fa-times-circle"></i> OFFLINE: ${offlineServers}</span> `;
+        if (elAdb) {
+            elAdb.innerText = `${totalCurrentADB} / ${totalExpectedADB}`;
+            const adbCard = document.querySelector('.stats-card.adb');
+            if (adbCard) {
+                if (totalExpectedADB > 0 && totalCurrentADB !== totalExpectedADB) {
+                    adbCard.classList.add('mismatch');
+                } else {
+                    adbCard.classList.remove('mismatch');
+                }
+            }
         }
 
-        if (totalExpectedADB > 0 || totalCurrentADB > 0) {
-            const adbMismatch = totalCurrentADB !== totalExpectedADB;
-            summaryHtml += `<span class="badge ${adbMismatch ? 'critical' : 'success'}"><i class="fas fa-mobile-alt"></i> ADB: ${totalCurrentADB}/${totalExpectedADB}</span>`;
-        }
-        
-        if (summaryBar) {
-            summaryBar.innerHTML = summaryHtml;
-        }
-
-        if (servers.length === 0) {
-            container.innerHTML = '<div class="loading">등록된 서버가 없습니다.</div>';
-            return;
+        // Keep correct active class based on currentFilter
+        document.querySelectorAll('.stats-card').forEach(card => {
+            card.classList.remove('active-filter');
+        });
+        const activeCard = document.querySelector(`.stats-card.${currentFilter}`);
+        if (activeCard) {
+            activeCard.classList.add('active-filter');
         }
 
-        const oldServersMap = new Map(currentServers.map(s => [s.id, s]));
+        // Store old servers for change comparison
+        prevServersMap = new Map(currentServers.map(s => [s.id, s]));
         currentServers = servers;
 
-        container.innerHTML = servers.map(server => {
-            const oldServer = oldServersMap.get(server.id);
-            const isCpuUpdated = oldServer && oldServer.cpu_usage.toFixed(0) !== server.cpu_usage.toFixed(0);
-            const isMemUpdated = oldServer && oldServer.mem_usage.toFixed(0) !== server.mem_usage.toFixed(0);
-
-            const isCpuAlert = server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold;
-            const isMemAlert = server.mem_alert_enabled && server.mem_usage > server.mem_threshold;
-            const isDiskAlert = server.disk_alert_enabled && server.disk_usage > server.disk_threshold;
-
-            const pingDate = parseLocalDate(server.last_ping);
-            const diff = Math.floor((new Date() - pingDate) / 1000);
-            const isOffline = diff > 300; // 5 minutes without sync
-            const cardStatus = isOffline ? 'critical' : server.status;
-
-            let specs = {};
-            try {
-                specs = JSON.parse(server.specs || '{}');
-            } catch (e) {}
-            const gitVersionInfo = specs["nmap_multi_v1 version"] || "";
-
-            const adbMismatch = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
-            const adbBadge = server.expected_devices > 0 
-                ? `<span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}"><i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices}</span>`
-                : (server.current_devices > 0 ? `<span class="adb-badge match"><i class="fas fa-mobile-alt"></i> ${server.current_devices}</span>` : '');
-
-            return `
-                <div class="server-card ${cardStatus} ${adbMismatch || isOffline ? 'adb-warning' : ''}" onclick="showDetails(${server.id})">
-                    <div class="server-name">
-                        <span>
-                            ${server.name}
-                            ${server.location ? `<span class="location-small">[${server.location}]</span>` : ''}
-                        </span>
-                        <div class="name-right">
-                            <span class="time-ago">${isOffline ? 'OFFLINE' : getTimeAgo(server.last_ping)}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card-meta">
-                        ${adbBadge ? `<span class="meta-item">${adbBadge}</span>` : ''}
-                        ${gitVersionInfo ? `<span class="meta-item git-ver"><i class="fab fa-github"></i> ${gitVersionInfo}</span>` : ''}
-                    </div>
-                    <div class="metrics">
-                        <div class="metric-item ${isCpuAlert ? 'alert-active' : ''}">
-                            <span class="label">CPU</span>
-                            <span class="value ${isCpuAlert ? 'high' : ''} ${isCpuUpdated ? 'updated' : ''}">${server.cpu_usage.toFixed(0)}%</span>
-                        </div>
-                        <div class="metric-item ${isMemAlert ? 'alert-active' : ''}">
-                            <span class="label">MEM</span>
-                            <span class="value ${isMemAlert ? 'high' : ''} ${isMemUpdated ? 'updated' : ''}">${server.mem_usage.toFixed(0)}%</span>
-                        </div>
-                        <div class="metric-item ${isDiskAlert ? 'alert-active' : ''}">
-                            <span class="label">DSK</span>
-                            <span class="value ${isDiskAlert ? 'high' : ''}">${server.disk_usage.toFixed(0)}%</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        renderDashboardList();
 
     } catch (error) {
         console.error('Update failed:', error);
     }
+}
+
+function renderDashboardList() {
+    const container = document.getElementById('server-list');
+    if (!container) return;
+
+    if (currentServers.length === 0) {
+        container.innerHTML = '<div class="loading">등록된 서버가 없습니다.</div>';
+        return;
+    }
+
+    const filteredServers = currentServers.filter(server => {
+        const pingDate = parseLocalDate(server.last_ping);
+        const diff = Math.floor((new Date() - pingDate) / 1000);
+        const isOffline = diff > 300;
+        const isAdbAlert = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
+        const isAlert = server.status === 'warning' || 
+                        (server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold) || 
+                        (server.mem_alert_enabled && server.mem_usage > server.mem_threshold) || 
+                        (server.disk_alert_enabled && server.disk_usage > server.disk_threshold) ||
+                        isAdbAlert;
+
+        if (currentFilter === 'online') {
+            return !isOffline && !isAlert;
+        } else if (currentFilter === 'warning') {
+            return !isOffline && isAlert;
+        } else if (currentFilter === 'offline') {
+            return isOffline;
+        }
+        return true;
+    });
+
+    if (filteredServers.length === 0) {
+        container.innerHTML = `<div class="loading">조건에 맞는 서버가 없습니다.</div>`;
+        return;
+    }
+
+    container.innerHTML = filteredServers.map(server => {
+        const oldServer = prevServersMap.get(server.id);
+        const isCpuUpdated = oldServer && oldServer.cpu_usage.toFixed(0) !== server.cpu_usage.toFixed(0);
+        const isMemUpdated = oldServer && oldServer.mem_usage.toFixed(0) !== server.mem_usage.toFixed(0);
+
+        const isCpuAlert = server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold;
+        const isMemAlert = server.mem_alert_enabled && server.mem_usage > server.mem_threshold;
+        const isDiskAlert = server.disk_alert_enabled && server.disk_usage > server.disk_threshold;
+
+        const pingDate = parseLocalDate(server.last_ping);
+        const diff = Math.floor((new Date() - pingDate) / 1000);
+        const isOffline = diff > 300;
+        const cardStatus = isOffline ? 'critical' : server.status;
+
+        let specs = {};
+        try {
+            specs = JSON.parse(server.specs || '{}');
+        } catch (e) {}
+        const gitVersionInfo = specs["nmap_multi_v1 version"] || "";
+
+        const adbMismatch = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
+        const adbBadge = server.expected_devices > 0 
+            ? `<span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}"><i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices}</span>`
+            : (server.current_devices > 0 ? `<span class="adb-badge match"><i class="fas fa-mobile-alt"></i> ${server.current_devices}</span>` : '');
+
+        return `
+            <div class="server-card ${cardStatus} ${adbMismatch || isOffline ? 'adb-warning' : ''}" onclick="showDetails(${server.id})">
+                <div class="server-name">
+                    <span>
+                        ${server.name}
+                        ${server.location ? `<span class="location-small">[${server.location}]</span>` : ''}
+                    </span>
+                    <div class="name-right">
+                        <span class="time-ago">${isOffline ? 'OFFLINE' : getTimeAgo(server.last_ping)}</span>
+                    </div>
+                </div>
+                
+                <div class="card-meta">
+                    ${adbBadge ? `<span class="meta-item">${adbBadge}</span>` : ''}
+                    ${gitVersionInfo ? `<span class="meta-item git-ver"><i class="fab fa-github"></i> ${gitVersionInfo}</span>` : ''}
+                </div>
+                <div class="metrics">
+                    <div class="metric-item ${isCpuAlert ? 'alert-active' : ''}">
+                        <span class="label">CPU</span>
+                        <span class="value ${isCpuAlert ? 'high' : ''} ${isCpuUpdated ? 'updated' : ''}">${server.cpu_usage.toFixed(0)}%</span>
+                    </div>
+                    <div class="metric-item ${isMemAlert ? 'alert-active' : ''}">
+                        <span class="label">MEM</span>
+                        <span class="value ${isMemAlert ? 'high' : ''} ${isMemUpdated ? 'updated' : ''}">${server.mem_usage.toFixed(0)}%</span>
+                    </div>
+                    <div class="metric-item ${isDiskAlert ? 'alert-active' : ''}">
+                        <span class="label">DSK</span>
+                        <span class="value ${isDiskAlert ? 'high' : ''}">${server.disk_usage.toFixed(0)}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function copyInstallerCommand() {
