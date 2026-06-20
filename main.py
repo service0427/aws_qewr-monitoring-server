@@ -71,7 +71,25 @@ async def receive_ping(data: PingRequest, db: Session = Depends(get_db)):
     server.mem_usage = data.mem_usage
     server.disk_usage = data.disk_usage
     server.uptime = data.uptime
-    server.specs = data.specs
+    
+    # Merge specs: if the new spec version is an error/empty but we have a previous good version, preserve it!
+    import json
+    merged_specs = data.specs
+    try:
+        new_specs_dict = json.loads(data.specs) if data.specs else {}
+        new_ver = new_specs_dict.get("nmap_multi_v1 version", "")
+        # If the incoming version is an error (contains "Error" or "exit status") or is empty, attempt to restore the last good version
+        if not new_ver or "Error" in new_ver or "exit status" in new_ver or "Not Installed" in new_ver:
+            if server.specs:
+                old_specs_dict = json.loads(server.specs)
+                old_ver = old_specs_dict.get("nmap_multi_v1 version", "")
+                if old_ver and not ("Error" in old_ver or "exit status" in old_ver):
+                    new_specs_dict["nmap_multi_v1 version"] = old_ver
+                    merged_specs = json.dumps(new_specs_dict, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error merging specs: {e}")
+
+    server.specs = merged_specs
     server.current_devices = data.current_devices
     
     # 3. Save historical metric
