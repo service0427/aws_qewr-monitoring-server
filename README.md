@@ -8,7 +8,7 @@
 - **Database:** Local MariaDB (`qewr` / `Tech1324`) on the AWS instance.
 
 ## Agent Installation
-Agents are installed on remote nodes via a single command. The source code for the installer is managed in the `github-init/` directory (linked to the `init` repository). The script enforces the `U26-??` hostname policy, auto-installs Tailscale, and configures a cron job.
+Agents are installed on remote nodes via a single command. The source code for the installer is managed in the `github-init/` directory (linked to the `init` repository). The script enforces that the hostname must not be 'tech', auto-installs Tailscale, and configures a cron job.
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash

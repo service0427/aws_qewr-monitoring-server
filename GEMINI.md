@@ -36,4 +36,4 @@ The `qewr-monitoring-server` is an advanced, lightweight monitoring solution for
 
 ### Client Installation
 - Run on target client: `curl -sSL https://raw.githubusercontent.com/service0427/init/main/install.sh | sudo bash`
-- Enforces `U*` hostname pattern (must start with 'U') and automates Tailscale auth and crontab registration (`/etc/cron.d/`).
+- Enforces that the hostname must not be 'tech' and automates Tailscale auth and crontab registration (`/etc/cron.d/`).
