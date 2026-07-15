@@ -49,16 +49,33 @@ async function updateDashboard() {
 
         let totalExpectedADB = 0;
         let totalCurrentADB = 0;
+        let totalAdbDevice = 0;
+        let totalAdbUnauthorized = 0;
+        let totalAdbOffline = 0;
 
         servers.forEach(s => {
             totalExpectedADB += s.expected_devices || 0;
             totalCurrentADB += s.current_devices || 0;
+
+            let sSpecs = {};
+            try {
+                sSpecs = JSON.parse(s.specs || '{}');
+            } catch (e) {}
+            const states = sSpecs.adb_device_states || {};
+            if (states.device !== undefined) {
+                totalAdbDevice += states.device || 0;
+                totalAdbUnauthorized += states.unauthorized || 0;
+                totalAdbOffline += states.offline || 0;
+            } else {
+                totalAdbDevice += s.current_devices || 0;
+            }
             
             const pingDate = parseLocalDate(s.last_ping);
             const diff = Math.floor((new Date() - pingDate) / 1000);
             
             const isOffline = diff > 300; // 5 minutes
-            const isAdbAlert = s.expected_devices > 0 && s.current_devices !== s.expected_devices;
+            const hasAdbIssues = (states.unauthorized || 0) > 0 || (states.offline || 0) > 0;
+            const isAdbAlert = (s.expected_devices > 0 && s.current_devices !== s.expected_devices) || hasAdbIssues;
             const isAlert = s.status === 'warning' || 
                             (s.cpu_alert_enabled && s.cpu_usage > s.cpu_threshold) || 
                             (s.mem_alert_enabled && s.mem_usage > s.mem_threshold) || 
@@ -87,10 +104,25 @@ async function updateDashboard() {
         if (elOffline) elOffline.innerText = offlineServers;
         
         if (elAdb) {
-            elAdb.innerText = `${totalCurrentADB} / ${totalExpectedADB}`;
+            let adbText = `${totalCurrentADB} / ${totalExpectedADB}`;
+            if (totalAdbUnauthorized > 0 || totalAdbOffline > 0) {
+                adbText += ` (⚠️ ${totalAdbUnauthorized + totalAdbOffline})`;
+            }
+            elAdb.innerText = adbText;
+
+            const adbLabel = document.querySelector('.stats-card.adb .stats-label');
+            if (adbLabel) {
+                if (totalAdbUnauthorized > 0 || totalAdbOffline > 0) {
+                    adbLabel.innerHTML = `ADB 기기 연결 <span style="color:var(--warning); font-size: 0.55rem;">[미인증:${totalAdbUnauthorized} 오프:${totalAdbOffline}]</span>`;
+                } else {
+                    adbLabel.innerText = "ADB 기기 연결";
+                }
+            }
+
             const adbCard = document.querySelector('.stats-card.adb');
             if (adbCard) {
-                if (totalExpectedADB > 0 && totalCurrentADB !== totalExpectedADB) {
+                const isMismatch = (totalExpectedADB > 0 && totalCurrentADB !== totalExpectedADB) || totalAdbUnauthorized > 0 || totalAdbOffline > 0;
+                if (isMismatch) {
                     adbCard.classList.add('mismatch');
                 } else {
                     adbCard.classList.remove('mismatch');
@@ -131,7 +163,14 @@ function renderDashboardList() {
         const pingDate = parseLocalDate(server.last_ping);
         const diff = Math.floor((new Date() - pingDate) / 1000);
         const isOffline = diff > 300;
-        const isAdbAlert = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
+        
+        let specs = {};
+        try {
+            specs = JSON.parse(server.specs || '{}');
+        } catch (e) {}
+        const states = specs.adb_device_states || {};
+        const hasAdbIssues = (states.unauthorized || 0) > 0 || (states.offline || 0) > 0;
+        const isAdbAlert = (server.expected_devices > 0 && server.current_devices !== server.expected_devices) || hasAdbIssues;
         const isAlert = server.status === 'warning' || 
                         (server.cpu_alert_enabled && server.cpu_usage > server.cpu_threshold) || 
                         (server.mem_alert_enabled && server.mem_usage > server.mem_threshold) || 
@@ -173,10 +212,45 @@ function renderDashboardList() {
         } catch (e) {}
         const gitVersionInfo = specs["nmap_multi_v1 version"] || "";
 
-        const adbMismatch = server.expected_devices > 0 && server.current_devices !== server.expected_devices;
-        const adbBadge = server.expected_devices > 0 
-            ? `<span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}"><i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices}</span>`
-            : (server.current_devices > 0 ? `<span class="adb-badge match"><i class="fas fa-mobile-alt"></i> ${server.current_devices}</span>` : '');
+        const states = specs.adb_device_states;
+        const hasAdbIssues = states && ((states.unauthorized || 0) > 0 || (states.offline || 0) > 0);
+        const adbMismatch = (server.expected_devices > 0 && server.current_devices !== server.expected_devices) || hasAdbIssues;
+
+        let adbBadge = '';
+        if (states) {
+            const devCount = states.device || 0;
+            const unauthCount = states.unauthorized || 0;
+            const offlineCount = states.offline || 0;
+            const otherCount = states.other || 0;
+            
+            adbBadge = `
+                <span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}">
+                    <i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices || server.current_devices}
+                </span>
+                <span class="adb-state-badge device" title="정상"><i class="fas fa-check"></i> ${devCount}</span>
+                ${unauthCount > 0 ? `<span class="adb-state-badge unauthorized" title="미인증"><i class="fas fa-exclamation"></i> ${unauthCount}</span>` : ''}
+                ${offlineCount > 0 ? `<span class="adb-state-badge offline" title="오프라인"><i class="fas fa-times"></i> ${offlineCount}</span>` : ''}
+                ${otherCount > 0 ? `<span class="adb-state-badge other" title="기타"><i class="fas fa-question"></i> ${otherCount}</span>` : ''}
+            `;
+        } else {
+            adbBadge = server.expected_devices > 0 
+                ? `<span class="adb-badge ${adbMismatch ? 'mismatch' : 'match'}"><i class="fas fa-mobile-alt"></i> ${server.current_devices}/${server.expected_devices}</span>`
+                : (server.current_devices > 0 ? `<span class="adb-badge match"><i class="fas fa-mobile-alt"></i> ${server.current_devices}</span>` : '');
+        }
+
+        // Calculate Remote Control URL
+        let remoteUrl = "";
+        if (server.remote_access_type && server.remote_access_type > 0) {
+            let finalRemoteIp = server.ip_address;
+            if (server.remote_access_type == 2) { // Tailscale
+                const allIpsStr = specs["All IPs"] || "";
+                const tsMatch = allIpsStr.match(/100\.\d+\.\d+\.\d+/);
+                if (tsMatch) {
+                    finalRemoteIp = tsMatch[0];
+                }
+            }
+            remoteUrl = `http://${finalRemoteIp}:5000`;
+        }
 
         return `
             <div class="server-card ${cardStatus} ${adbMismatch || isOffline ? 'adb-warning' : ''}" onclick="showDetails(${server.id})">
@@ -186,9 +260,19 @@ function renderDashboardList() {
                         ${server.location ? `<span class="location-small">[${server.location}]</span>` : ''}
                     </span>
                     <div class="name-right">
+                        ${remoteUrl ? `
+                            <a href="${remoteUrl}" target="_blank" onclick="event.stopPropagation();" class="card-remote-btn" title="Open Remote Control (scrcpy)">
+                                <i class="fas fa-desktop"></i>
+                            </a>
+                        ` : ''}
                         <span class="time-ago">${isOffline ? 'OFFLINE' : getTimeAgo(server.last_ping)}</span>
                     </div>
                 </div>
+                ${server.memo ? `
+                    <div class="server-memo" title="${server.memo}">
+                        <i class="far fa-sticky-note"></i> ${server.memo}
+                    </div>
+                ` : ''}
                 
                 <div class="card-meta">
                     ${adbBadge ? `<span class="meta-item">${adbBadge}</span>` : ''}
@@ -288,7 +372,22 @@ function showDetails(serverId) {
             ? `${server.current_devices} / ${server.expected_devices}` 
             : `${server.current_devices} (Expected: Not Set)`
     };
-    const allInfo = { ...basicInfo, ...specs };
+
+    if (specs.adb_device_states) {
+        const states = specs.adb_device_states;
+        basicInfo["ADB Device Breakdown"] = `
+            <span class="adb-state-badge device" style="font-size:0.75rem; padding: 2px 6px; margin-right: 4px;"><i class="fas fa-check"></i> 정상: ${states.device || 0}</span>
+            <span class="adb-state-badge unauthorized" style="font-size:0.75rem; padding: 2px 6px; margin-right: 4px;"><i class="fas fa-exclamation-triangle"></i> 미인증: ${states.unauthorized || 0}</span>
+            <span class="adb-state-badge offline" style="font-size:0.75rem; padding: 2px 6px; margin-right: 4px;"><i class="fas fa-times-circle"></i> 오프라인: ${states.offline || 0}</span>
+            ${states.other ? `<span class="adb-state-badge other" style="font-size:0.75rem; padding: 2px 6px;"><i class="fas fa-question-circle"></i> 기타: ${states.other}</span>` : ''}
+        `;
+    }
+
+    const specsDisplay = { ...specs };
+    delete specsDisplay.adb_device_states;
+    delete specsDisplay.adb_recovery_summary;
+
+    const allInfo = { ...basicInfo, ...specsDisplay };
 
     specList.innerHTML = Object.entries(allInfo).map(([key, value]) => `
         <div class="spec-item">
@@ -296,6 +395,20 @@ function showDetails(serverId) {
             <span class="spec-value">${value}</span>
         </div>
     `).join('');
+
+    const recoverySection = document.getElementById('modal-recovery-section');
+    const recoveryLog = document.getElementById('modal-recovery-log');
+    
+    if (specs.adb_recovery_summary) {
+        if (recoverySection && recoveryLog) {
+            recoverySection.style.display = 'block';
+            recoveryLog.innerText = specs.adb_recovery_summary;
+        }
+    } else {
+        if (recoverySection) {
+            recoverySection.style.display = 'none';
+        }
+    }
 
     document.getElementById('detail-modal').style.display = 'block';
     document.body.classList.add('modal-open');

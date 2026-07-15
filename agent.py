@@ -12,8 +12,34 @@ SERVER_URL = "https://qewr.link/api/ping" # Production
 SERVER_NAME = socket.gethostname()
 
 def get_mac_address():
-    mac = ':'.join(['{:02x}'.format((uuid.getnode() >> ele) & 0xff) for ele in range(0, 8*6, 8)][::-1])
-    return mac
+    try:
+        import psutil
+        addrs = psutil.net_if_addrs()
+        
+        # Priority 1: Integrated/PCI Ethernet (eno, enp, eth)
+        priority_prefixes = ['eno', 'enp', 'eth']
+        for prefix in priority_prefixes:
+            for interface in sorted(addrs.keys()):
+                if interface.startswith(prefix):
+                    for addr in addrs[interface]:
+                        if hasattr(psutil, 'AF_LINK') and addr.family == psutil.AF_LINK:
+                            return addr.address.lower()
+                        elif addr.family == socket.AF_PACKET: # Fallback for some linux envs
+                            return addr.address.lower()
+
+        # Priority 2: Any other physical-looking ethernet or wifi (en, wl)
+        for interface in sorted(addrs.keys()):
+            if interface.startswith(('en', 'wl')):
+                for addr in addrs[interface]:
+                    if hasattr(psutil, 'AF_LINK') and addr.family == psutil.AF_LINK:
+                        return addr.address.lower()
+                    elif addr.family == socket.AF_PACKET:
+                        return addr.address.lower()
+    except Exception as e:
+        print(f"Error determining MAC: {e}")
+
+    # Final Fallback: uuid.getnode()
+    return ':'.join(['{:02x}'.format((uuid.getnode() >> ele) & 0xff) for ele in range(0, 8*6, 8)][::-1])
 
 def get_public_ip():
     try:
@@ -46,7 +72,57 @@ def get_uptime():
     except:
         return "unknown"
 
-def get_detailed_specs():
+def get_adb_device_states():
+    states = {
+        "device": 0,
+        "unauthorized": 0,
+        "offline": 0,
+        "other": 0
+    }
+    try:
+        import subprocess
+        result = subprocess.run(["adb", "devices"], capture_output=True, text=True, timeout=5.0)
+        if result.returncode == 0:
+            lines = result.stdout.strip().split('\n')
+            for line in lines[1:]:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    status = parts[1]
+                    if status == 'device':
+                        states['device'] += 1
+                    elif status == 'unauthorized':
+                        states['unauthorized'] += 1
+                    elif status == 'offline':
+                        states['offline'] += 1
+                    else:
+                        states['other'] += 1
+    except Exception:
+        pass
+    return states
+
+def get_adb_recovery_summary():
+    log_paths = [
+        "/opt/qewr-agent/adb_recovery.log",
+        "/var/log/adb_recovery.log",
+        "/home/ubuntu/adb_recovery.log",
+        "/root/adb_recovery.log"
+    ]
+    for path in log_paths:
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                    lines = [line.strip() for line in lines if line.strip()]
+                    if lines:
+                        return "\n".join(lines[-5:])
+            except Exception:
+                pass
+    return "No recovery events logged"
+
+def get_detailed_specs(adb_states=None):
     specs = {
         "CPU Model": "Unknown",
         "CPU Cores": psutil.cpu_count(logical=True),
@@ -63,10 +139,55 @@ def get_detailed_specs():
                     break
     except:
         pass
+
+    # Check git repository version for nmap_multi_v1
+    git_version = "Not Installed"
+    import glob
+    paths = glob.glob("/home/*/nmap_multi_v1") + ["/root/nmap_multi_v1"]
+    for repo_path in paths:
+        if os.path.exists(os.path.join(repo_path, ".git")):
+            try:
+                import subprocess
+                # Get local version
+                result = subprocess.run(
+                    ["git", "-c", "safe.directory=*", "-C", repo_path, "log", "-1", "--format=%h (%ad)", "--date=short"],
+                    capture_output=True, text=True, check=True
+                )
+                local_version = result.stdout.strip()
+                local_hash = local_version.split()[0]
+                
+                # Check remote latest commit hash
+                remote_result = subprocess.run(
+                    ["git", "-c", "safe.directory=*", "-C", repo_path, "ls-remote", "origin", "HEAD"],
+                    capture_output=True, text=True, timeout=5.0
+                )
+                if remote_result.returncode == 0 and remote_result.stdout:
+                    remote_hash = remote_result.stdout.split()[0][:7]
+                    if local_hash == remote_hash:
+                        git_version = f"{local_version} [Latest]"
+                    else:
+                        git_version = f"{local_version} [Update Available: {remote_hash}]"
+                else:
+                    git_version = f"{local_version} [Remote status unknown]"
+                break
+            except Exception as e:
+                git_version = f"Error: {str(e)}"
+                break
+    specs["nmap_multi_v1 version"] = git_version
+
+    if adb_states is None:
+        adb_states = get_adb_device_states()
+    specs["adb_device_states"] = adb_states
+    specs["adb_recovery_summary"] = get_adb_recovery_summary()
+
     return specs
 
 async def send_ping():
     public_ip = get_public_ip()
+    adb_states = get_adb_device_states()
+    current_devices = adb_states.get("device", 0)
+    specs = get_detailed_specs(adb_states)
+    
     data = {
         "hardware_id": get_mac_address(),
         "server_name": SERVER_NAME,
@@ -75,7 +196,8 @@ async def send_ping():
         "mem_usage": psutil.virtual_memory().percent,
         "disk_usage": psutil.disk_usage('/').percent,
         "uptime": get_uptime(),
-        "specs": json.dumps(get_detailed_specs())
+        "specs": json.dumps(specs),
+        "current_devices": current_devices
     }
 
     async with httpx.AsyncClient() as client:

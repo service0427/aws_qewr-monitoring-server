@@ -509,6 +509,59 @@ input:checked + .slider:before { transform: translateX(22px); }
     animation: blink 1.5s infinite;
 }
 
+.adb-state-badge {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 2px;
+}
+.adb-state-badge.device {
+    background: rgba(0, 230, 118, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(0, 230, 118, 0.25);
+}
+.adb-state-badge.unauthorized {
+    background: rgba(255, 204, 0, 0.12);
+    color: var(--warning);
+    border: 1px solid rgba(255, 204, 0, 0.25);
+}
+.adb-state-badge.offline {
+    background: rgba(255, 77, 77, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255, 77, 77, 0.35);
+}
+.adb-state-badge.other {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.recovery-log-section {
+    margin-top: 15px;
+    border-top: 1px solid #333;
+    padding-top: 12px;
+}
+.terminal-box {
+    background: #050505;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    color: #00ff66;
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.45;
+    margin-top: 8px;
+    text-align: left;
+    box-shadow: inset 0 0 8px rgba(0, 255, 102, 0.05);
+}
+
 /* Card Meta Section (ADB / Git) */
 .card-meta {
     display: flex;
@@ -537,6 +590,47 @@ input:checked + .slider:before { transform: translateX(22px); }
     margin-left: 6px;
     font-weight: normal;
     opacity: 0.85;
+}
+.card-remote-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 230, 118, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    border-radius: 4px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.card-remote-btn:hover {
+    background: var(--success);
+    color: #000;
+    box-shadow: 0 0 8px var(--success);
+}
+.server-memo {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.server-name > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.name-right {
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
