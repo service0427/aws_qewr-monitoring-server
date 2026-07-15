@@ -261,7 +261,7 @@ function renderDashboardList() {
                     </span>
                     <div class="name-right">
                         ${remoteUrl ? `
-                            <a href="${remoteUrl}" target="_blank" onclick="event.stopPropagation();" class="card-remote-btn" title="Open Remote Control (scrcpy)">
+                            <a href="${remoteUrl}" target="_blank" onclick="event.stopPropagation();" ontouchstart="event.stopPropagation();" class="card-remote-btn" title="Open Remote Control (scrcpy)">
                                 <i class="fas fa-desktop"></i>
                             </a>
                         ` : ''}
